@@ -1,0 +1,173 @@
+##    Licensed under the Apache License, Version 2.0 (the "License"); you may
+##    not use this file except in compliance with the License. You may obtain
+##    a copy of the License at
+##
+##         http://www.apache.org/licenses/LICENSE-2.0
+##
+##    Unless required by applicable law or agreed to in writing, software
+##    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+##    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+##    License for the specific language governing permissions and limitations
+##    under the License.
+
+tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0
+
+#metadata:
+#  template_name: tosca_simple_profile_for_nfv_vRNC
+#  template_author: opnfv_parser_project
+#  template_version: tosca_simple_profile_for_nfv_1_0
+
+# Optional description of the definitions inside the file.
+description: >
+  NFV TOSCA simple profile for RNC types
+    1. Compute Node MM, CM, DM, LB...
+       1.1 MM: MaintainModule;
+       1.2 CM: Control Module;
+       1.3 DM: Data Module;
+       1.4 LB: LineCard Module.
+    2. Network Node VL and CP
+
+# The import section shall be ignored if the value of tosca_definitions_version
+# is tosca_simple_profile_for_nfv_1_0_0, otherwise will be needed.
+
+# list of node type definitions
+node_types:
+  rnc.nodes.VNF:
+    derived_from: tosca.nodes.nfv.VNF
+    properties:
+      vnftype:
+        type: string
+        description: type of the RNC
+        default:  UMTS
+        required: false
+        constraints:
+          - valid_values: [ TDS-CDMA, UMTS, CDMA ]
+    attributes:
+      private_ip_of_MM:
+        type: string
+        description: IP of master MM
+      private_ip_of_CM:
+        type: string
+        description: IP of master CM
+      private_ip_of_DM:
+        type: string
+        description: IP of master DM
+      private_ip_of_LB:
+        type: string
+        description: IP of master LB
+    requirements:
+      - virtualLink_VNFM:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+      - virtualLink_EMS:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+      - virtualLink_TRAFFIC:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+
+  rnc.nodes.compute.MM:
+    derived_from: tosca.nodes.nfv.VDU
+    properties:
+      activestatus:
+        type: integer
+        required: false
+        description: 1 for active or 0 for passive
+        constraints:
+            - valid_values: [ 0, 1 ]
+      id:
+        type: string
+        defaule: MM
+        required: false
+        description: >
+          A identifier of this VDU within the scope of the VNFD,
+          including version functional description and other
+          identification information.
+
+  rnc.nodes.compute.CM:
+    derived_from: tosca.nodes.nfv.VDU
+    properties:
+      activestatus:
+        type: integer
+        required: false
+        description: 1 for active or 0 for passive
+        constraints:
+          - valid_values: [ 0, 1 ]
+
+  rnc.nodes.compute.DM:
+    derived_from: tosca.nodes.nfv.VDU
+
+  rnc.nodes.compute.LB:
+    derived_from: tosca.nodes.nfv.VDU
+
+  rnc.nodes.BlockStorage:
+    derived_from: tosca.nodes.BlockStorage
+
+  rnc.nodes.VL:
+    derived_from: tosca.nodes.nfv.VL
+
+  rnc.nodes.CP:
+    derived_from: tosca.nodes.nfv.CP
+
+  rnc.nodes.CP.MM:
+    derived_from: tosca.nodes.nfv.CP
+    # It's ok here because of the weakly validation.
+
+  rnc.nodes.CP.CM:
+    derived_from: tosca.nodes.nfv.CP
+    requirements:
+      - virtualLink:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+      - virtualBinding:
+          capability: tosca.capabilities.nfv.VirtualBindable
+          relationship: tosca.relationships.nfv.VirtualBindsTo
+          node: rnc.nodes.compute.CM
+
+  rnc.nodes.CP.DM:
+    derived_from: tosca.nodes.nfv.CP
+    requirements:
+      - virtualLink:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+      - virtualBinding:
+          capability: tosca.capabilities.nfv.VirtualBindable
+          relationship: tosca.relationships.nfv.VirtualBindsTo
+          node: rnc.nodes.compute.DM
+
+  rnc.nodes.CP.LB:
+    derived_from: tosca.nodes.nfv.CP
+    requirements:
+      - virtualLink:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+          relationship: tosca.relationships.nfv.VirtualLinksTo
+          node: rnc.nodes.VL
+      - virtualBinding:
+          capability: tosca.capabilities.nfv.VirtualBindable
+          relationship: tosca.relationships.nfv.VirtualBindsTo
+          node: rnc.nodes.compute.LB
+
+# list of capability type definitions
+capability_types:
+  rnc.capabilities.Container:
+    derived_from: tosca.capabilities.Container
+    properties:
+      swap:
+        type: scalar-unit.size
+        description: swap info
+        required: false
+        default: 0
+        constraints:
+            - greater_or_equal: 0 MB
+      iops:
+        type: integer
+        description: IOPS for disk
+        required: false
+        default: 0
+        constraints:
+          - greater_than: 0

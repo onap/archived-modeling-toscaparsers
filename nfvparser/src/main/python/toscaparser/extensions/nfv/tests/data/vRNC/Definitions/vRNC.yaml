@@ -1,0 +1,552 @@
+##    Licensed under the Apache License, Version 2.0 (the "License"); you may
+##    not use this file except in compliance with the License. You may obtain
+##    a copy of the License at
+##
+##         http://www.apache.org/licenses/LICENSE-2.0
+##
+##    Unless required by applicable law or agreed to in writing, software
+##    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+##    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+##    License for the specific language governing permissions and limitations
+##    under the License.
+
+tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0
+
+metadata:
+  template_name: tosca_simple_profile_for_nfv_vRNC
+  template_author: opnfv_parser_project
+  template_version: tosca_simple_profile_for_nfv_1_0
+
+# Optional description of the definitions inside the file.
+description: >
+  TOSCA simple profile for RNC
+    1. Compute Node MM, CM, DM, LB...
+      1.1 MM: MaintainModule;
+      1.2 CM: Control Module;
+      1.3 DM: Data Module;
+      1.4 LB: LineCard Module
+    2. Network Node VL and CP
+
+imports:
+  - rnc_definition.yaml
+
+# list of YAML alias anchors (or macros)
+dsl_definitions:
+  compute_props_os_DEF: &compute_props_os_DEF
+    architecture: x86_64
+    type: Linux
+    distribution: Cirros
+    version: 0.3.2
+
+  compute_props_host_MM: &compute_props_host_MM
+    disk_size: 1 GB
+    num_cpus: 1
+    mem_size: 512 MB
+
+  compute_props_host_CM: &compute_props_host_CM
+    disk_size: 0 GB
+    num_cpus: 1
+    mem_size: 512 MB
+
+  compute_props_host_DM: &compute_props_host_DM
+    disk_size: 0 GB
+    num_cpus: 1
+    mem_size: 512 MB
+
+  compute_props_host_LB: &compute_props_host_LB
+    disk_size: 0 GB
+    num_cpus: 1
+    mem_size: 512 MB
+
+# topology template definition of the cloud application or service
+topology_template:
+  # a description of the topology template
+  description: >
+    simple RNC template
+
+  inputs:
+    mm_storage_size:
+      type: integer
+      default: 1
+      description: mm additional block storage size
+      constraints:
+        - in_range: [ 1, 200 ]
+    id:
+      type: string
+      description: ID of this VNF
+      default: UMTS
+    vendor:
+      type: string
+      description: name of the vendor who generate this VNF
+      default: opnfv_parser_project
+    version:
+      type: version
+      description: version of the software for this VNF
+      default: 1.0
+
+  substitution_mappings:
+    node_type: rnc.nodes.VNF
+    requirements:
+      virtualLink_VNFM: [ MM_Port_CTRL, virtualLink ]
+      virtualLink_EMS: [ MM_Port_EMS, virtualLink ]
+      virtualLink_TRAFFIC: [ LB_Port_EXTERMEDIA, virtualLink ]
+
+  # definition of the node templates of the topology
+  node_templates:
+    MM_Active:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: MM_Active_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/MM/mm_install.sh
+          configure:
+            implementation: ./Scripts/MM/mm_active_configure.sh
+
+    MM_Active_Host:
+      type: rnc.nodes.compute.MM
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_MM
+      requirements:
+        - local_storage:
+            node: MM_BlockStorage
+            relationship: Storage_attachesto
+      artifacts:
+        #the VM image of MM
+        vm_image: mm.image
+
+    MM_Passive:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: MM_Passive_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/MM/mm_install.sh
+          configure:
+            implementation: ./Scripts/MM/mm_passvie_configure.sh
+
+    MM_Passive_Host:
+      type: rnc.nodes.compute.MM
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_MM
+      requirements:
+        - local_storage:
+            node: MM_BlockStorage
+            relationship: Storage_attachesto
+        - high_availability: MM_Active_Host
+      artifacts:
+        #the VM image of MM
+        vm_image: mm.image
+
+    MM_BlockStorage:
+      type: rnc.nodes.BlockStorage
+      properties:
+        size: { get_input: mm_storage_size }
+      interfaces:
+        Configure:
+          post_configure_target:
+            implementation: ./Scripts/MM/storage_script.sh
+
+    CM_Active:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: CM_Active_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/CM/cm_install.sh
+          configure:
+            implementation: ./Scripts/CM/cm_active_configure.sh
+
+    CM_Active_Host:
+      type: rnc.nodes.compute.CM
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_CM
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 12
+            default_instances: 1
+      artifacts:
+        #the VM image of CM
+        vm_image: cm.image
+
+    CM_Passive:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: CM_Passive_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/CM/cm_install.sh
+          configure:
+            implementation: ./Scripts/CM/cm_passvie_configure.sh
+
+    CM_Passive_Host:
+      type: rnc.nodes.compute.CM
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_CM
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 12
+            default_instances: 1
+      requirements:
+        - high_availability: CM_Active_Host
+      artifacts:
+        #the VM image of CM
+        vm_image: mm.image
+
+    DM:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: DM_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/DM/dm_install.sh
+          configure:
+            implementation: ./Scripts/DM/dm_configure.sh
+
+    DM_Host:
+      type: rnc.nodes.compute.DM
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_DM
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 12
+            default_instances: 1
+      artifacts:
+        vm_image: dm.image
+
+    LB:
+      type: tosca.nodes.SoftwareComponent
+      properties:
+        component_version: 1.0
+      requirements:
+        - host: LB_Host
+      interfaces:
+        Standard:
+          create:
+            implementation: ./Scripts/LB/lb_install.sh
+          configure:
+            implementation: ./Scripts/LB/lb_configure.sh
+
+    LB_Host:
+      type: rnc.nodes.compute.LB
+      capabilities:
+        os:
+          properties: *compute_props_os_DEF
+        host:
+          properties: *compute_props_host_LB
+        scalable:
+          properties:
+            min_instances: 1
+            max_instances: 2
+            default_instances: 1
+      artifacts:
+        #the VM image of LB
+        vm_image: lb.image
+
+    CTRL_Net:
+      type: rnc.nodes.VL
+      properties:
+        vendor: ZTE
+        cidr: "128.0.0.0/8"
+        network_name: Ctrl_Net
+        network_type: vlan
+        segmentation_id: 110
+        dhcp_enabled: false
+
+    INTERMEDIA_Net:
+      type: rnc.nodes.VL
+      properties:
+        vendor: ZTE
+        cidr: 10.0.0.0/8
+        start_ip: 10.1.0.1
+        end_ip: 10.1.2.254
+        network_name: InterMedia_Net
+        network_type: vlan
+        segmentation_id: 111
+        dhcp_enabled: false
+
+    EXTERMEDIA_Net:
+      type: rnc.nodes.VL
+      properties:
+        vendor: ZTE
+        cidr: 172.1.0.0/16
+        start_ip: 172.1.0.2
+        end_ip: 172.1.2.254
+        gateway_ip: 172.1.0.1
+        network_name: ExterMdedia_Net
+        network_type: vlan
+        segmentation_id: 100
+        dhcp_enabled: false
+
+    EMS_Net:
+      type: rnc.nodes.VL
+      properties:
+        vendor: ZTE
+        cidr: 129.0.0.0/24
+        start_ip: 129.0.0.2
+        end_ip: 129.0.0.64
+        gateway_ip: 129.0.0.1
+        network_name: Ems_Net
+        network_type: vlan
+        segmentation_id: 101
+        dhcp_enabled: false
+
+    MM_Active_Port_EMS:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: MM_Active_Host
+        - virtualLink: EMS_Net
+
+    MM_Active_Port_EXTERMEDIA:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 1
+        is_default: true
+      requirements:
+        - virtualBinding: MM_Active_Host
+        - virtualLink: EMS_Net
+
+    MM_Active_Port_CTRL:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 2
+        is_default: false
+      requirements:
+        - virtualBinding: MM_Active_Host
+        - virtualLink: CTRL_Net
+
+    MM_Active_Port_INTERMEDIA:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 3
+        is_default: false
+      requirements:
+        - virtualBinding: MM_Active_Host
+        - virtualLink: EXTERMEDIA_Net
+
+    MM_Passive_Port_EMS:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: MM_Passive_Host
+        - virtualLink: EMS_Net
+
+    MM_Passive_Port_EXTERMEDIA:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 1
+        is_default: true
+      requirements:
+        - virtualBinding: MM_Passive_Host
+        - virtualLink: EXTERMEDIA_Net
+
+    MM_Passive_Port_CTRL:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 2
+        is_default: false
+      requirements:
+        - virtualBinding: MM_Passive_Host
+        - virtualLink: CTRL_Net
+
+    MM_Passive_Port_INTERMEDIA:
+      type: rnc.nodes.CP.MM
+      properties:
+        order: 3
+        is_default: false
+      requirements:
+        - virtualBinding: MM_Passive_Host
+        - virtualLink: INTERMEDIA_Net
+
+    CM_Active_Port_CTRL:
+      type: rnc.nodes.CP.CM
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: CM_Active_Host
+        - virtualLink: CTRL_Net
+
+    CM_Active_Port_INTERMEDIA:
+      type: rnc.nodes.CP.CM
+      properties:
+        order: 1
+        is_default: false
+      requirements:
+        - virtualBinding: CM_Active_Host
+        - virtualLink: INTERMEDIA_Net
+
+    CM_Passive_Port_CTRL:
+      type: rnc.nodes.CP.CM
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: CM_Passive_Host
+        - virtualLink: CTRL_Net
+
+    CM_Passive_Port_INTERMEDIA:
+      type: rnc.nodes.CP.CM
+      properties:
+        order: 1
+        is_default: false
+      requirements:
+        - virtualBinding: CM_Passive_Host
+        - virtualLink: INTERMEDIA_Net
+
+    DM_Port_CTRL:
+      type: rnc.nodes.CP.DM
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: DM_Host
+        - virtualLink: CTRL_Net
+
+    DM_Port_INTERMEDIA:
+      type: rnc.nodes.CP.DM
+      properties:
+        order: 1
+        is_default: false
+      requirements:
+        - virtualBinding: DM_Host
+        - virtualLink: INTERMEDIA_Net
+
+    LB_Port_CTRL:
+      type: rnc.nodes.CP.LB
+      properties:
+        order: 0
+        is_default: true
+      requirements:
+        - virtualBinding: LB_Host
+        - virtualLink: CTRL_Net
+
+    LB_Port_INTERMEDIA:
+      type: rnc.nodes.CP.LB
+      properties:
+        order: 1
+        is_default: false
+      requirements:
+        - virtualBinding: LB_Host
+        - virtualLink: INTERMEDIA_Net
+
+    LB_Port_EXTERMEDIA:
+      type: rnc.nodes.CP.LB
+      properties:
+        order: 2
+        is_default: false
+      requirements:
+        - virtualBinding: LB_Host
+        - virtualLink: EXTERMEDIA_Net
+
+  # definition of the relationship templates of the topology
+  relationship_templates:
+    Storage_attachesto:
+      type: tosca.relationships.AttachesTo
+      properties:
+        location: /data_location
+
+  # definition of output parameters for the topology template
+  outputs:
+    private_ip_of_MM:
+      description: The Inner(CtrPlane) IP address of the MM.
+      value: { get_attribute: [ MM_Active_Host, private_address ] }
+
+    private_ip_of_CM:
+      description: The Inner(CtrPlane)  IP address of the CM.
+      value: { get_attribute: [ CM_Active_Host, private_address ] }
+
+    private_ip_of_DM:
+      description: The Inner(CtrPlane)  IP address of the DM.
+      value: { get_attribute: [ DM_Host, private_address ] }
+
+    private_ip_of_LB:
+      description: The Inner(CtrPlane)  IP address of the LB.
+      value: { get_attribute: [ LB_Host, private_address ] }
+
+  # definition of logical groups of node templates within the topology
+  # To be continue about this section
+  groups:
+    AntiAffinityServerGroup:
+      type: tosca.groups.Root
+      description: >
+         Logical component grouping for anti affinity placement,
+         MM_Acitve, MM_Passive, CM_Acitve, CM_Passive, LB must host
+         on different host to reduce the impact to each other.
+      members: [ MM_Active, MM_Passive, CM_Active, CM_Passive, LB ]
+
+    AffinityServerGroup:
+      type: tosca.groups.Root
+      description: >
+        Logical component grouping for affinity placement,
+        CM and DM will be host on the same host to get high performence
+      members: [ CM_Active, DM ]
+
+  policies:
+    - AntiAffinityPolicy:
+        # type: tosca.policies.Placement
+        type: tosca.policies.Placement.Antilocate
+        # Current only placement in openstack community
+        description: Apply anti-locate placement policy to group
+        targets: [ AntiAffinityServerGroup ]
+
+    - AffinityPolicy:
+        #type: tosca.policies.Placement
+        type: tosca.policies.Placement.Colocate
+        # Current only placement in openstack community
+        description: Apply anti-locate placement policy to group
+        targets: [ AffinityServerGroup ]
+
+  #  ServerGroupScaling_DM: # added future
+  #    members: [ DM, ]# only one, will be error
+  #    policies:
+  #      - name: MyScaleUpPolicy
+  #      - type: tosca.policy.scale.up | tosca.policy.scale.down
+  #      - rule: fn.utilizaton [ DM ], greater_than: 80
+  #      - trigger: script_dm
+
+  #  ServerGroupScaling_LB: # added future
+  #    members: [ LB, ] # only one, will be error
+  #    policies:
+  #      - name: MyScaleUpPolicy
+  #      - type: tosca.policy.scale.up | tosca.policy.scale.down
+  #      - rule: fn.utilizaton [ LB ], greater_than: 80
+  #      - trigger: script_lb

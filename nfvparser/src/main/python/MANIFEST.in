@@ -1,0 +1,14 @@
+include AUTHORS
+include ChangeLog
+global-include *.py
+global-include *.yaml
+global-include *.sh
+global-include *.txt
+global-include *.csar
+global-include *.zip
+global-include *.meta
+global-include *.conf
+exclude .gitignore
+exclude .gitreview
+
+global-exclude *.pyc
