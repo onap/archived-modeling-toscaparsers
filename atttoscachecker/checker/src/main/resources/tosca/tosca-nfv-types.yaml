@@ -1,0 +1,143 @@
+tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0
+description: >
+ TOSCA simple profile for Network Function Virtualization (NFV).
+
+metadata:
+  template_name: http://docs.oasis-open.org/tosca/tosca-nfv/v1.0/csd01/tosca-nfv-v1.0-csd01.pdf
+  template_version: "1.0"
+
+#imports:
+#  - tosca-common-types.yaml
+
+capability_types:
+
+#from 6.3
+  tosca.capabilities.nfv.VirtualLinkable:
+    derived_from: tosca.capabilities.Root
+
+#from 7.2.1
+  tosca.capabilities.nfv.VirtualBindable:
+    derived_from: tosca.capabilities.Root
+# breaks the virtualbinding requirement in the node type nfv.CP
+#    valid_source_types: [ tosca.nodes.nfv.VDU ]
+
+#from 7.2.2
+  tosca.capabilities.nfv.HA:
+    derived_from: tosca.capabilities.Root
+    valid_source_types: [ tosca.nodes.nfv.VDU ]
+
+#from 7.2.3
+  tosca.capabilities.nfv.HA.ActiveActive:
+    derived_from: tosca.capabilities.nfv.HA
+
+#from 7.2.4
+  tosca.capabilities.nfv.HA.ActivePassive:
+    derived_from: tosca.capabilities.nfv.HA
+
+#from 7.2.5
+  tosca.capabilities.nfv.Metric:
+    derived_from: tosca.capabilities.Root
+
+
+relationship_types:
+
+#from 6.4
+  tosca.relationships.nfv.VirtualLinksTo:
+    derived_from: tosca.relationships.ConnectsTo
+    valid_target_types: [ tosca.capabilities.nfv.VirtualLinkable ]
+
+#from 7.3.1
+  tosca.relationships.nfv.VirtualBindsTo:
+    derived_from: tosca.relationships.ConnectsTo
+    valid_target_types: [ tosca.capabilities.nfv.VirtualBindable]
+
+#from 7.3.2
+  tosca.relationships.nfv.HA:
+    derived_from: tosca.relationships.Root
+    valid_target_types: [ tosca.capabilities.nfv.HA]
+
+#from 7.3.3
+  tosca.relationships.nfv.Monitor:
+    derived_from: tosca.relationships.ConnectsTo
+    valid_target_types: [ tosca.capabilities.nfv.Metric]
+
+
+node_types:
+
+#from 7.4.1
+  tosca.nodes.nfv.VNF:
+    derived_from: tosca.nodes.Root
+    properties:
+      id:
+        type: string
+        description: ID of this VNF
+      vendor:
+        type: string
+        description: name of the vendor who generate this VNF
+      version:
+        type: version
+        description: version of the software for this VNF
+    requirements:
+      - virtualLink:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+
+#from 7.4.2
+  tosca.nodes.nfv.VDU:
+    derived_from: tosca.nodes.SoftwareComponent
+    capabilities:
+      high_availability:
+        type: tosca.capabilities.nfv.HA
+      Virtualbinding:
+        type: tosca.capabilities.nfv.VirtualBindable
+      monitoring_parameter:
+        type: tosca.capabilities.nfv.Metric
+    requirements:
+      - high_availability:
+          capability: tosca.capabilities.nfv.HA
+          relationship: tosca.relationships.nfv.HA
+          occurrences: [ 0, 1 ]
+      - host:
+          capability: tosca.capabilities.Container
+          node: tosca.nodes.Compute
+          relationship: tosca.relationships.HostedOn
+
+#from 7.4.3
+  tosca.nodes.nfv.CP:
+    derived_from: tosca.nodes.Root
+    properties:
+      type:
+        type: string
+        required: false
+    requirements:
+      - virtualLink:
+          capability: tosca.capabilities.nfv.VirtualLinkable
+      - virtualbinding:
+          capability: tosca.capabilities.nfv.VirtualBindable
+    attributes:
+      IP_address:
+        type: string
+#!attributes do not take required ..        required: false
+
+#from 8.1
+  tosca.nodes.nfv.VL:
+    derived_from: tosca.nodes.Root
+    properties:
+      vendor:
+        type: string
+        required: true
+        description: name of the vendor who generate this VL
+    capabilities:
+      virtual_linkable:
+        type: tosca.capabilities.nfv.VirtualLinkable
+
+#from 8.2
+  tosca.nodes.nfv.VL.ELine:
+    derived_from: tosca.nodes.nfv.VL
+
+#from 8.3
+  tosca.nodes.nfv.VL.ELAN:
+    derived_from: tosca.nodes.nfv.VL
+
+#from
+  tosca.nodes.nfv.VL.ETree:
+    derived_from: tosca.nodes.nfv.VL
