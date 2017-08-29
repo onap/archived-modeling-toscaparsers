@@ -1,0 +1,21 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+  http://www.att.com/schema/asc/validator/pipeline
+  http://www.att.com/schema/asc/validator/pipeline/pipeline.xsd">
+	
+	<beans profile="default">
+<!--
+		<bean id="catalogs" class="org.onap.tosca.checker.service.Catalogs">
+			<property name="catalogs">
+				<map>
+					 Add any predefined catalogs here 
+					<entry key="?" value="??"/>
+				</map>
+			</property>
+		</bean>
+-->
+	</beans>
+
+</beans>

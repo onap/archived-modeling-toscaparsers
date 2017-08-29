@@ -1,0 +1,117 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0
+description: >
+ Non-normative type definitions, as per section 8 of TOSCA simple profile.
+
+
+artifact_types:
+
+  tosca.artifacts.Deployment.Image.Container.Docker:
+    derived_from: tosca.artifacts.Deployment.Image
+    description: Docker Container Image
+
+  tosca.artifacts.Deployment.Image.VM.ISO:
+    derived_from: tosca.artifacts.Deployment.Image.VM
+    description: Virtual Machine (VM) image in ISO disk format
+    mime_type: application/octet-stream
+    file_ext: [ iso ]
+
+  tosca.artifacts.Deployment.Image.VM.QCOW2:
+    derived_from: tosca.artifacts.Deployment.Image.VM
+    description: Virtual Machine (VM) image in QCOW v2 standard disk format
+    mime_type: application/octet-stream
+    file_ext: [ qcow2 ]
+
+
+capability_types:
+
+  tosca.capabilities.Container.Docker:
+    derived_from: tosca.capabilities.Container
+    properties:
+      version:
+        type: list
+        required: false
+        entry_schema: version
+      publish_all:
+        type: boolean
+        default: false
+        required: false
+      publish_ports:
+        type: list
+        entry_schema: tosca.datatypes.network.PortSpec
+        required: false
+      expose_ports:
+        type: list
+        entry_schema: tosca.datatypes.network.PortSpec
+        required: false
+      volumes:
+        type: list
+        entry_schema: string
+        required: false
+
+
+node_types:
+  
+  tosca.nodes.Database.MySQL:
+    derived_from: tosca.nodes.Database
+    requirements:
+      - host:
+          capability: tosca.capabilities.Container
+          node: tosca.nodes.DBMS.MySQL
+
+  tosca.nodes.DBMS.MySQL:
+    derived_from: tosca.nodes.DBMS
+    properties:
+      port:
+        type: integer
+        description: reflect the default MySQL server port
+        default: 3306
+      root_password:
+        type: string
+        # MySQL requires a root_password for configuration
+        # Override parent DBMS definition to make this property required
+        required: true
+    capabilities:
+      # Further constrain the ‘host’ capability to only allow MySQL databases
+      host:
+        type: tosca.capabilities.Container
+        valid_source_types: [ tosca.nodes.Database.MySQL ]
+
+  tosca.nodes.WebServer.Apache:
+    derived_from: tosca.nodes.WebServer
+
+  tosca.nodes.WebApplication.WordPress:
+    derived_from: tosca.nodes.WebApplication
+    properties:
+      admin_user:
+        type: string
+      admin_password:
+        type: string
+      db_host:
+        type: string
+    requirements:
+      - database_endpoint:
+          capability: tosca.capabilities.Endpoint.Database
+          node: tosca.nodes.Database
+          relationship: tosca.relationships.ConnectsTo
+
+  tosca.nodes.WebServer.Nodejs:
+    derived_from: tosca.nodes.WebServer
+    properties:
+      # Property to supply the desired implementation in the Github repository
+      github_url:
+        required: no
+        type: string
+        description: location of the application on the github.
+        default: https://github.com/mmm/testnode.git
+    interfaces:
+      Standard:
+        type: tosca.interfaces.node.lifecycle.Standard
+        inputs:
+          github_url:
+            type: string
+
+  tosca.nodes.Container.Application.Docker:
+    derived_from: tosca.nodes.Container.Application
+    requirements:
+      - host:
+          capability: tosca.capabilities.Container.Docker
