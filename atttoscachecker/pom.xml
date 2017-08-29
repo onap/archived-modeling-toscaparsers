@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+ 	<groupId>org.onap.tosca</groupId>
+ 	<artifactId>checker</artifactId>
+ 	<version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>TOSCA Checker tools</name>
+ 
+  <modules>
+    <module>kwalify</module>
+    <module>checker</module>
+    <module>service</module>
+  </modules>
+ 	
+  <scm>
+ 		<connection>scm:git:https://</connection>
+ 		<developerConnection>scm:git:https://</developerConnection>
+ 		<tag>HEAD</tag>
+ 		<url>https://</url>
+ 	</scm>
+
+<!-- Black Duck plugin dependencies -->
+	<pluginRepositories>
+		<pluginRepository>
+			<id>JCenter</id>
+			<name>JCenter Repository</name>
+			<url>http://jcenter.bintray.com</url>
+		</pluginRepository>
+ 
+		<pluginRepository>
+			<id>Restlet</id>
+			<name>Restlet Repository</name>
+			<url>http://maven.restlet.com</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
