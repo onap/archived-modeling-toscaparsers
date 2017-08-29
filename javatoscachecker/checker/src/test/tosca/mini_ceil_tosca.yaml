@@ -1,0 +1,108 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0
+
+imports:
+  - dcae_uservice_tosca.yaml
+
+topology_template:
+
+  node_templates:
+
+    HostComputeStats_Ceilometer:
+      type: delimitedAsciiDataFormat
+      properties:
+          name: HostComputeStats_Ceilometer
+          UUID: HostComputeStats_Ceilometer
+          version: 1.0.0
+          delimiter: "|"
+          fieldList:
+            -
+                name: DATETIME_FTP_COLLECTION
+                type: date_time
+#                subType: 1.0
+                subType: "yyyymmddhhmmss"
+            -
+                name: DATETIME_OSS
+                type: date_time
+                subType: "yyyymmddhhmmss"
+            -
+                name: DATETIMEUTC
+                type: date_time
+                subType: "yyyymmddhhmmss"
+            -
+                name: DATETIMEZONE
+                type: date_time
+                subType: "yyyymmddhhmmss zzz"
+            -
+                name: EMS_NAME
+                type: string
+                comment: "Element Manager System Name?"
+            -
+                name: NE_VERSION
+                type: string
+                comment: "Network Element Version????"
+            -
+                name: PERIOD
+                type: int
+                comment: "Sample period in seconds"
+            -
+                name: SUSPECTFLAG
+                type: string
+                comment: "Data suspect?  Null means ok?"
+            -
+                name: SERVICE
+                type: string
+            -
+                name: resourceid
+                type: string
+            -
+                name: hardware.cpu.load.1min
+                type: float
+                comment: "CPU load in in the last one minute" 
+            -
+                name: hardware.cpu.load.5min
+                type: float
+                comment: "CPU load in in the last five minutes" 
+            -
+                name: hardware.cpu.load.15min
+                type: float
+                comment: "CPU load in in the last fifteen minutes" 
+            -
+                name: hardware.cpu.memory.total
+                type: float
+                comment: "Total memory size in KB"
+            -
+                name: hardware.cpu.memory.avail
+                type: float
+                comment: "Memory available in KB"
+            -
+                name: hardware.cpu.swap.total
+                type: float
+                comment: "Total swap size in KB"
+            -
+                name: hardware.cpu.swap.avail
+                type: float
+                comment: "Swap available in KB"
+            -
+                name: hardware.network.ip.incoming.datagrams
+                type: float
+                comment: "Cumulative incoming datagrams"
+            -
+                name: hardware.network.ip.outgoing.datagrams
+                type: float
+                comment: "Cumulative outgoing datagrams"
+            -
+                name: hardware.network.ip.incoming.blocks
+                type: float
+                comment: "Cumulative incoming blocks"
+            -
+                name: hardware.network.ip.outgoing.blocks
+                type: float
+                comment: "Cumulative outgoing blocks"
+            -
+                name: hardware.system_states.cpu.idle
+                type: float
+                comment: "CPU Percent idle"
+          formatType: fixed_format
+          formatSubType: delimitedAscii
+          fullList: true
+          numFields: 22

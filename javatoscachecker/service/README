@@ -1,0 +1,6 @@
+checker service usage
+
+A checking request is done with respect to a namespace that a client names. Each such namespace is backed by an 
+in-memory catalog. 
+A checking request can 
+
