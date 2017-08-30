@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a437d4f_df440776",
+        "filename": ".gitreview",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "This swap file should be removed :atttoscachecker/checker/src/test/tosca/.workflow_1.yaml.swp",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_5f581756",
+        "filename": ".gitreview",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "Can we replace tab with white space for all files",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_9f779fd4",
+        "filename": "atttoscachecker/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "Company name should not appear here, we can use javatoscachecker",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_ff4fcb90",
+        "filename": "atttoscachecker/checker/src/main/java/org/onap/tosca/checker/model/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "License header is missing",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_1f4baf88",
+        "filename": "atttoscachecker/checker/src/main/java/org/onap/tosca/checker/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "License header is missing",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a437d4f_7f5bdb54",
+        "filename": "atttoscachecker/kwalify/LICENSE",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-30T01:37:46Z",
+      "side": 1,
+      "message": "Can we use kwalify/LICENSE here? The source code should be put under Apache 2.0 according to ONAP TSC charter",
+      "revId": "59b08eddf28b8ad5e88dfc19c890b3aee9792a82",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
