@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a437d4f_4a2292ba",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 43
+      },
+      "writtenOn": "2017-08-31T07:22:49Z",
+      "side": 1,
+      "message": "Company name should not appear here, we can use javatoscachecker.\ntoscaparsers/atttoscachecker/ \u003d\u003d\u003e toscaparsers/javatoscachecker/",
+      "revId": "36352d35c7407c072b4e14f48fd48961d191086a",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
