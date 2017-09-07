@@ -286,8 +286,6 @@ _property_definition: &property_definition
 #      type: str
 #      required: no
 
-#see section A.5.8
-#_property_assignment_definition: &property_assignment_definition
 
 #see 3.5.10
 _attribute_definition: &attribute_definition
@@ -1407,7 +1405,7 @@ _topology_template_definition: &topology_template_definition
       type: map
       mapping:
         =:
-          *property_definition
+          *parameter_definition
     node_templates:
       desc: "definition of the node templates of the topology"
       name: node_templates
@@ -1431,7 +1429,7 @@ _topology_template_definition: &topology_template_definition
       type: map
       mapping:
         =:
-          *attribute_assignment_definition
+          *parameter_definition
     groups:
       desc: "An optional list of Group definitions whose members are node templates defined within this same Topology Template"
       name: groups

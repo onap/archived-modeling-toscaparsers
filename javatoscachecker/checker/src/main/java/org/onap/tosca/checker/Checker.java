@@ -131,7 +131,7 @@ public class Checker {
   private Target   						target = null; //what we're validating at the moment
 	private	Map<String, Target>	grammars = new HashMap<String, Target>(); //grammars for the different tosca versions
 
-	private CheckerConfiguration config = new CheckerConfiguration();	
+	private CheckerConfiguration config;
 	private Catalog   		catalog;
 	private	TargetLocator	locator = new CommonLocator();
 
@@ -139,22 +139,26 @@ public class Checker {
 	private Messages											messages;
 	private Logger    log = Logger.getLogger(Checker.class.getName());
 
+
 	private static String[] EMPTY_STRING_ARRAY = new String[0];
+	private static final	String[] grammarFiles = new String[] {"tosca/tosca_simple_yaml_1_0.grammar",
+																															"tosca/tosca_simple_yaml_1_1.grammar"};	
 
 
-  public Checker() throws CheckerException {
+  public Checker(CheckerConfiguration theConfig) throws CheckerException {
+		this.config = theConfig;
     loadGrammars();
 		loadAnnotations();
 		messages = new Messages();
   }
 
-	/* Need a proper way to indicate where the grammars are and how they should be identified
-	 */
-	private final	String[] grammarFiles = new String[] {"tosca/tosca_simple_yaml_1_0.grammar",
-																											"tosca/tosca_simple_yaml_1_1.grammar"};	
+  public Checker() throws CheckerException {
+		this(new CheckerConfiguration());
+	}
+
 	private void loadGrammars() throws CheckerException {
 
-		for (String grammarFile: grammarFiles) {
+		for (String grammarFile: this.config.grammars()) {
 			Target grammarTarget = this.locator.resolve(grammarFile);
 			if (grammarTarget == null) {
 				log.warning("Failed to locate grammar " + grammarFile);
@@ -181,7 +185,7 @@ public class Checker {
 				log.warning("Invalid grammar " + grammarFile + ": cannot locate tosca_definitions_versions");
 			}
 			if (versions == null || versions.isEmpty()) {
-				log.warning("Invalid grammar " + grammarFile + ": no tosca_definitions_versions specified");
+				log.warning("Invalid grammar " + grammarFile + ": no tosca_definitions_version specified");
 				continue;
 			}
 
@@ -1593,8 +1597,8 @@ available and the available targets won't be re-processed.
   
 	//topology_template_definition and sub-rules
 	/* */
-	@Checks(path="/topology_template")
-	protected void check_topology_template(
+	@Catalogs(path="/topology_template")
+	protected void catalog_topology_template(
 										Map<String,Map> theDef, final CheckContext theContext) {
     
 		theContext.enter("topology_template");
@@ -1602,21 +1606,31 @@ available and the available targets won't be re-processed.
 		try {		
 			theDef.entrySet().stream()
 				.forEach(e ->	catalogs(e.getKey(), e.getValue(), theContext));
-		
-			theDef.entrySet().stream()
-				.forEach(e ->	checks(e.getKey(), e.getValue(), theContext));
-/*		
-		for (Iterator<Map.Entry<String,Object>> ri = theDef.entrySet().iterator();
-		     ri.hasNext(); ) {
-			Map.Entry<String,Object> e = ri.next();
-			checks(e.getKey(), e.getValue(), theContext);
-		}
-*/
 		}
 		finally {
 			theContext.exit();
 		}
   }
+
+	/** */
+	@Checks(path="/topology_template")
+	protected void check_topology_template(
+										Map<String,Map> theDef, final CheckContext theContext) {
+    
+		theContext.enter("topology_template");
+
+		try {		
+		//	theDef.entrySet().stream()
+		//		.forEach(e ->	catalogs(e.getKey(), e.getValue(), theContext));
+		
+			theDef.entrySet().stream()
+				.forEach(e ->	checks(e.getKey(), e.getValue(), theContext));
+		}
+		finally {
+			theContext.exit();
+		}
+  }
+
 
   /*
    * Once the syntax of the imports section is validated parse/validate/catalog    * all the imported template information
@@ -1806,7 +1820,7 @@ available and the available targets won't be re-processed.
 		}
 	}
   
-	@Checks(path="topology_template/outputs")
+	@Checks(path="/topology_template/outputs")
 	protected void check_outputs(Map<String, Map> theOutputs,
 	                            CheckContext theContext) {
     theContext.enter("outputs");
@@ -1834,7 +1848,12 @@ available and the available targets won't be re-processed.
 			    !checkDefinition(theName, theDef, theContext)) {
 			  return;
 			}
-			//check the expression
+      
+      //check value
+			Object value = theDef.get("value");
+			if (value != null) {
+				checkDataValuation(value, theDef, theContext);
+			}
 		}
 		finally {
 		  theContext.exit();
@@ -3444,7 +3463,7 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 	 * @return true if any handler returned true (if they returned something at all), false otherwise (even when no
    * handlers were found)
 	 */
-	protected boolean handles(String theHandlerKey, Object... theArgs) {
+	protected boolean handles(String theHandlerKey,	Object... theArgs) {
 
 		boolean handled = false;
 		Map<Method, Object> entries = handlers.row(theHandlerKey);
@@ -3455,7 +3474,7 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 					res = entry.getKey().invoke(entry.getValue(), theArgs);
 				}
 				catch (Exception x) {
-        	log.log(Level.WARNING, theHandlerKey + " by " + entry.getKey() + " failed", x);
+       		log.log(Level.WARNING, theHandlerKey + " by " + entry.getKey() + " failed", x);
 				}
 				handled |= res == null ? false : (res instanceof Boolean && ((Boolean)res).booleanValue());
 			}	
@@ -3630,11 +3649,12 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 
 	public static class CheckerConfiguration {
 
-		private boolean 	allowAugmentation = true;
-		private String		defaultImportsPath = null;
-		private String		defaultCheckerRoots = null;
+		private boolean 			allowAugmentation = true;
+		private String				defaultImportsPath = null;
+		private List<String>	grammars = new LinkedList<String>();
 
 		protected CheckerConfiguration() {
+			withGrammars(Checker.grammarFiles);
 		}
 
 		public CheckerConfiguration allowAugmentation(boolean doAllow) {
@@ -3646,7 +3666,7 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 			return this.allowAugmentation;
 		}
 
-		public CheckerConfiguration defaultImportsPath(String thePath) {
+		public CheckerConfiguration withDefaultImportsPath(String thePath) {
 			this.defaultImportsPath = thePath;
 			return this;
 		}
@@ -3655,6 +3675,16 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 			return this.defaultImportsPath;
 		}
 
+		public CheckerConfiguration withGrammars(String... theGrammars) {
+			for (String grammar: theGrammars) {
+				this.grammars.add(grammar);
+			}
+			return this;
+		}
+
+		public String[] grammars() {
+			return this.grammars.toArray(new String[0]);
+		}
 	}
 
 }

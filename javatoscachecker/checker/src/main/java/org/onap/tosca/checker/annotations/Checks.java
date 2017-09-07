@@ -38,5 +38,6 @@ import java.lang.annotation.Target;
  */
 public @interface Checks {
   String path() default "/";
-	String[] version() default { "1.0", "1.0.0", "1.1", "1.1.0" };
+	String[] version() default { "tosca_simple_yaml_1_0", "tosca_simple_yaml_1_0_0",
+															 "tosca_simple_yaml_1_1", "tosca_simple_yaml_1_1_0" };
 }

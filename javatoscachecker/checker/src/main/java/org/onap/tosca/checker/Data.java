@@ -79,6 +79,8 @@ public class Data {
 		
 		public String name();
 
+		public boolean isScalar();
+
 		public Evaluator evaluator();
 
 		public Evaluator constraintsEvaluator();
@@ -92,6 +94,10 @@ public class Data {
 			return null;
 		}
 
+		public boolean isScalar() {
+			return false;
+		}
+
 		public Evaluator evaluator() {
 			return Data::evalUser;
 		}
@@ -99,56 +105,65 @@ public class Data {
 		public Evaluator constraintsEvaluator() {
 			return Data::evalUserConstraints;
 		}
+		
+		public String toString() {
+			return "UserType(scalar=false)";
+		}
 	};
 
 
 	public static enum CoreType implements Type {
 
-    String("string",
+    String("string", true,
 					(expr,def,ctx) -> expr != null && expr instanceof String,
 					Data::evalScalarConstraints),
-    Integer("integer",
+    Integer("integer", true,
 					(expr,def,ctx) -> Data.valueOf(ctx, expr, Integer.class),
 					Data::evalScalarConstraints),
-		Float("float",
+		Float("float", true,
 					(expr,def,ctx) -> Data.valueOf(ctx, expr, Double.class, Integer.class),
 					Data::evalScalarConstraints),
- 	  Boolean("boolean",
+ 	  Boolean("boolean", true,
 					(expr,def,ctx) -> Data.valueOf(ctx, expr, Boolean.class),
 					Data::evalScalarConstraints),
- 	  Null("null",
+ 	  Null("null", true,
 					(expr,def,ctx) -> expr.equals("null"),
 					null),
-   	Timestamp("timestamp",
+   	Timestamp("timestamp", true,
 					(expr,def,ctx) -> timestampRegex.matcher(expr.toString()).matches(),
 					null),
-    List("list", Data::evalList, Data::evalListConstraints),
-    Map("map", Data::evalMap, Data::evalMapConstraints),
-		Version("version",
+    List("list", false, Data::evalList, Data::evalListConstraints),
+    Map("map", false, Data::evalMap, Data::evalMapConstraints),
+		Version("version", true,
 					(expr,def,ctx) -> versionRegex.matcher(expr.toString()).matches(),
 					null),
 		/* use a scanner and check that the upper bound is indeed greater than
-		 * the lower bound */
-    Range("range",
+		 * the lower bound. Marked as a scalar because its evaluator does not record a context error */
+    Range("range", true,
 					(expr,def,ctx) -> { return rangeRegex.matcher(expr.toString()).matches();},
 					null ),
-    Size("scalar-unit.size",
+    Size("scalar-unit.size", true,
 				 (expr,def,ctx) -> sizeRegex.matcher(expr.toString()).matches(),
 					null),
-    Time("scalar-unit.time",
+    Time("scalar-unit.time", true,
 				 (expr,def,ctx) -> timeRegex.matcher(expr.toString()).matches(),
 					null),
-    Frequency("scalar-unit.frequency",
+    Frequency("scalar-unit.frequency", true,
 				 (expr,def,ctx) -> frequencyRegex.matcher(expr.toString()).matches(),
 					null);
 
 
 		private String 		toscaName;
+		private boolean		isScalar;
 		private Evaluator	valueEvaluator,
 											constraintsEvaluator;
 
-		private CoreType(String theName, Evaluator theValueEvaluator, Evaluator theConstraintsEvaluator) {
+		private CoreType(String theName,
+										 boolean theIsScalar,
+										 Evaluator theValueEvaluator,
+										 Evaluator theConstraintsEvaluator) {
 			this.toscaName = theName;
+			this.isScalar = theIsScalar;
 			this.valueEvaluator = theValueEvaluator;
 			this.constraintsEvaluator = theConstraintsEvaluator;
 
@@ -162,6 +177,10 @@ public class Data {
 			return this.toscaName;
 		}
 
+		public boolean isScalar() {
+			return this.isScalar;
+		}
+
 		public Evaluator evaluator() {
 			return this.valueEvaluator;
 		}
@@ -169,6 +188,7 @@ public class Data {
 		public Evaluator constraintsEvaluator() {
 			return this.constraintsEvaluator;
 		}
+
 	}
 
 	private static Pattern timestampRegex = null,
@@ -338,8 +358,9 @@ public class Data {
 			if (entryEvaluator != null &&
 					!entryEvaluator.eval(val, entryTypeDef, theCtx)) {
 				res= false;
-				//the constraints evaluator should have already added an error, but it also adds some context 
-				//theCtx.addError("Value " + val + " failed evaluation", null);
+				if (entryType.isScalar()) {
+					theCtx.addError("Value " + val + " failed constraints evaluation", null);
+				}
 			}
 		}
 		return res;
@@ -366,15 +387,16 @@ public class Data {
 			Map propDef = (Map)propEntry.getValue();
 			Object propVal = val.get(propEntry.getKey());
 
-//System.out.println("evalUser: " + propVal);
-
 			if (propVal != null) {
 				Data.Type propType = typeByName((String)propDef.get("type"));
 
+//System.out.println("evalUser: " + propVal + " of type " + propType + "/" + propType.isScalar());
+
 				if (!propType.evaluator().eval(propVal, propDef, theCtx)) {
 					res= false;
-					//the constraints evaluator should have already added an error
-					//theCtx.addError("Property " + propEntry.getKey() + " failed evaluation for " + propVal, null);
+					if (propType.isScalar()) {
+						theCtx.addError("Property " + propEntry.getKey() + " failed evaluation for " + propVal + " as " + propType.name(), null);
+					}
 				}
 			}
 		}
