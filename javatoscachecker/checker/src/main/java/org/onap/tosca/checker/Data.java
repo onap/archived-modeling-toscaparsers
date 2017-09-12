@@ -294,15 +294,11 @@ public class Data {
 	private static boolean evalCollection(Collection theVals,
 																 				Map theDef,
 																 				Checker.CheckContext theCtx) {
-
-//System.out.println("evalCollection: " + theDef + ", " + theVals);
-
 		Data.Type entryType = null;
 		Map entryTypeDef = (Map)theDef.get("entry_schema");
 		if (null != entryTypeDef)
 			entryType = typeByName((String)entryTypeDef.get("type"));
 
-//System.out.println("evalCollection, entry definition: " + entryTypeDef);
 		boolean res = true;
 		for (Object val: theVals) {
 			//check if the value is not a function call
@@ -336,8 +332,6 @@ public class Data {
 	private static boolean evalCollectionConstraints(Collection theVals,
 																 									 Map theDef,
 																 									 Checker.CheckContext theCtx) {
-//System.out.println("evalCollectionConstraints: " + theDef + ", " + theVals);
-
 		//should check overall constraints 
 
 		if (theVals == null)
@@ -349,8 +343,6 @@ public class Data {
 
 		String entryTypeName = (String)entryTypeDef.get("type");
 		Data.Type entryType = typeByName(entryTypeName);
-
-//System.out.println("evalCollectionConstraints, entry definition: " + entryTypeDef);
 
 		boolean res = true;
 		for (Object val: theVals) {
@@ -367,16 +359,13 @@ public class Data {
 	}
 
 	/*
-	 * All required properties across the hierarchical defintion must be present
-	 * TODO:  The expr cannot contain any entry not specified in the type definition
+	 * TODO: check that 
 	 */
 	public static boolean evalUser(Object theVal,
 																 Map theDef,
 																 Checker.CheckContext theCtx) {
-//System.out.println("evalUser: " + theDef + ", " + theVal);
-
 		boolean res = true;
-		Map val = (Map)theVal;
+		Map val = new HashMap((Map)theVal);
 		//must be done with respect to the super-type(s) definition
 		Iterator<Map.Entry> props =	theCtx.catalog()
 																				.facets(Construct.Data,
@@ -385,12 +374,10 @@ public class Data {
 		while (props.hasNext()) {
 			Map.Entry propEntry = props.next();
 			Map propDef = (Map)propEntry.getValue();
-			Object propVal = val.get(propEntry.getKey());
+			Object propVal = val.remove(propEntry.getKey());
 
 			if (propVal != null) {
 				Data.Type propType = typeByName((String)propDef.get("type"));
-
-//System.out.println("evalUser: " + propVal + " of type " + propType + "/" + propType.isScalar());
 
 				if (!propType.evaluator().eval(propVal, propDef, theCtx)) {
 					res= false;
@@ -400,6 +387,12 @@ public class Data {
 				}
 			}
 		}
+
+		if (!val.isEmpty()) {
+			theCtx.addError("Entries " + val + " were not expected for type " + theDef.get("type"), null);
+			res = false;
+		}
+
 		return res;
 	}
 	
@@ -550,11 +543,52 @@ public class Data {
 
 	private static boolean evalConcat(
 						Object theVal, Map theDef, Checker.CheckContext theCtx) {
+
+		Map val = (Map)theVal;
+		Map.Entry entry = (Map.Entry)val.entrySet().iterator().next();
+
+		if (!(entry.getValue() instanceof List)) {
+			theCtx.addError("concat: argument expression not a list", null);
+			return false;
+		}
+
+		List args = (List)entry.getValue();
+		if (args.size() < 2) {
+			theCtx.addError("concat: requires a minimum of 2 arguments", null);
+			return false;
+		}
+
+		//TODO: every argument must be or yield a String value
+		//cannot be done in full
+
 		return true;
 	}
 	
 	private static boolean evalToken(
 						Object theVal, Map theDef, Checker.CheckContext theCtx) {
+	
+		Map val = (Map)theVal;
+		Map.Entry entry = (Map.Entry)val.entrySet().iterator().next();
+
+		if (!(entry.getValue() instanceof List)) {
+			theCtx.addError("token: argument expression not a list", null);
+			return false;
+		}
+
+		List args = (List)entry.getValue();
+		if (args.size() != 3) {
+			theCtx.addError("token: requires 3 arguments", null);
+			return false;
+		}
+
+		//the first 2 argument must be String expressions so require more elaborate estimation
+		//but the third one must be an integer
+
+		if (!(args.get(2) instanceof Integer)) {
+			theCtx.addError("token: 3rd argument must be an integer (substring index), found " + args.get(2).getClass(),null);
+			return false;
+		}
+		
 		return true;
 	}
 
@@ -564,7 +598,7 @@ public class Data {
 		Map.Entry entry = (Map.Entry)val.entrySet().iterator().next();
 
 		if (!(entry.getValue() instanceof String)) {
-			theCtx.addError("get_input: argument must be a String" ,null);
+			theCtx.addError("get_input: argument must be a String", null);
 			return false;
 		}
 
@@ -666,6 +700,8 @@ public class Data {
 				return false;
 			}
 
+			//follow all 'HSOTED_ON' relationships to find a host, if any ..
+
 			return true;
 		}
 		else {
@@ -737,7 +773,6 @@ public class Data {
 		{
 			String facetName = (String)args.get(facetNameIndex);
 			for (Facet facet: theFacets) {
-//System.out.println("get_data: looking at " + facetConstruct + " " + facetConstructType + ", " + facet + " " + facetName);
 				facetSpec = theCtx.catalog()
 											.getFacetDefinition(
 														facetConstruct,

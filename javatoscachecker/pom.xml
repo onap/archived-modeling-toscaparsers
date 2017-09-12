@@ -9,13 +9,40 @@
  	<version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>TOSCA Checker tools</name>
+
+	<properties>
+		<nexusproxy>https://nexus.onap.org</nexusproxy>
+		<sitePath>/content/sites/site/${project.groupId}/${project.artifactId}/${project.version}</sitePath>
+		<releases.path>content/repositories/releases/</releases.path>
+		<snapshots.path>content/repositories/snapshots/</snapshots.path>
+		<staging.path>content/repositories/staging/</staging.path>
+	</properties>
  
   <modules>
     <module>kwalify</module>
     <module>checker</module>
     <module>service</module>
   </modules>
- 	
+ 
+	<distributionManagement>
+		<repository>
+			<id>ecomp-releases</id>
+			<name>ONAP Release Repository</name>
+			<url>${nexusproxy}/${releases.path}</url>
+		</repository>
+		<snapshotRepository>
+			<id>ecomp-snapshots</id>
+			<name>ONAP Snapshot Repository</name>
+			<url>${nexusproxy}/${snapshots.path}</url>
+		</snapshotRepository>
+		<!--
+		<site>
+			<id>ecomp-site</id>
+			<url>dav:${nexusproxy}${sitePath}</url>
+		</site>
+		-->
+	</distributionManagement>
+	
   <scm>
  		<connection>scm:git:https://</connection>
  		<developerConnection>scm:git:https://</developerConnection>

@@ -1,6 +1,45 @@
-checker service usage
+This sub-project exposes the TOSCA yaml checker functionality as a REST based service.
+The service implemetation is based on the spring framework and contains a built-in default configuration that will run the service at port 8080 over plain http. 
 
-A checking request is done with respect to a namespace that a client names. Each such namespace is backed by an 
-in-memory catalog. 
-A checking request can 
+To start the service:
+    java -jar Service-0.0.1-SNAPSHOT.jar
 
+Sample client usage (windows power shell):
+ 
+   PS C:\Users\serban> Invoke-WebRequest -Uri http://localhost:8080/check_template/ -Method Post -ContentType application/json -InFile C:\src\asc-tosca\DCAE\v3\Database\Postgres-generic\schema.yaml
+
+
+With stateful 'namespaces':
+
+    PS C:\Users\serban> Invoke-WebRequest -Uri http://localhost:8080/check_template/database/schema.yaml -Method Post -ContentType application/json -InFile C:\src\asc-tosca\DCAE\v3\Database\Postgres-generic\schema.yaml
+    PS C:\Users\serban> Invoke-WebRequest -Uri http://localhost:8080/check_template/database -Method Post -ContentType application/json -InFile C:\src\asc-tosca\DCAE\v3\Database\Postgres-generic\template_postgres.yaml
+
+The first call creates the 'database' namespace and registers the submitted template as 'schema.yaml'. The second call submits a template as part of the same namespace containing an import of schema.yaml (from the first call); this mechanism allows for validation of multiple service templates with the same schema/type system.
+
+
+Details
+
+POST /check_template/
+	- unnamed (isolated/one time) service template checking
+	- return: a json representation of the report produced by the checker (an array with json objects as elements, one per error encoutered)
+
+POST /check_template/{catalog}/{name}
+	- named template submitted as part of the given catalog. A catalog allows a client application to isolate a particular TOSCA schema (type system) against which other templates will be checked. The catalog names are arbitrary (see catalog GET below as a way of checking if a catalog name is in use).
+	- return: a json representation of the report produced by the checker (an array with json objects as elements, one per error encoutered). When using the catalog based api one can use import statements within the templates but .. all import references are towards templates submitted prior hence all the errors in the report are for the submitted template). 
+  - note: currently there is no explicit catalog creation API. A new catalog with the given name will be created if not already existing. 
+
+GET /check_template/{catalog}/{name}
+	- checks if a template with the given name was submitted/checked as part of the given catalog. 
+	- returns HTTP 200OK if a catalog with that name existed and the given name is associated with a previously submitted (named) template, 404 otherwise. No other catalog or template information is returned.
+
+POST /check_template/{catalog} 
+	- unnamed template submitted as part of the given catalog. The template is processed but not registered so it cannot be referenced afterwards; it can use import statements refering to named templates within this catalog.
+	- return: a json representation of the report produced by the checker (an array with json objects as elements, one per error encoutered)
+
+GET /check_template/{catalog} 
+	- checks if a catalog with the given name exists
+	- returns HTTP 200OK if a catalog with that name existed, 404 otherwise. No other catalog information is returned. 
+
+DELETE /check_template/{catalog}
+	- deletes an existing catalog (and all information associated with it)
+	- returns HTTP 200OK if a catalog with that name existed, 404 otherwise 

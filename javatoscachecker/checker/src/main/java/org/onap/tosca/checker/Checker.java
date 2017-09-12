@@ -2821,7 +2821,7 @@ available and the available targets won't be re-processed.
       return true;
     }
     defs = Maps.newHashMap(defs); //
-    
+
     boolean res = true;
 		if (theSpecType == null) {
 			theSpecType = (String)theSpec.get("type");
@@ -2838,8 +2838,6 @@ available and the available targets won't be re-processed.
     while (i.hasNext() && !defs.isEmpty()) {
       Map.Entry<String,Map> type = i.next();
 
-//System.out.println(" **** type : " + type.getKey() );
-
       Map<String, Map> typeDefs = (Map<String,Map>)type.getValue()
 																													.get(theFacet.name());
       if (null == typeDefs) {
@@ -2847,7 +2845,7 @@ available and the available targets won't be re-processed.
       }
 
       MapDifference<String, Map> diff = Maps.difference(defs, typeDefs);
-      
+
 			//this are the ones this type and the spec have in common (same key,
 			//different values)
       Map<String, MapDifference.ValueDifference<Map>> facetDefs = 
