@@ -79,7 +79,7 @@
 			<plugin>
        	<groupId>org.apache.maven.plugins</groupId>
        	<artifactId>maven-jar-plugin</artifactId>
-       	<version>2.1</version>
+       	<version>3.0.2</version>
        	<configuration>
          	<archive>
            	<manifest>
@@ -146,6 +146,7 @@
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.8</version>
 				<extensions>true</extensions>
 				<configuration>
 					<nexusUrl>${nexusproxy}</nexusUrl>
