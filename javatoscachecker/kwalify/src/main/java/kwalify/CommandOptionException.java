@@ -23,7 +23,7 @@
  *
  * Added in order to satisfy onap.org code check constraints:
  *
- * The MIT license is deemed more permisive than the Apache License, Version 2.0,
+ * This license is deemed more permisive than if it were under the Apache License, Version 2.0,
  * found at
  *        http://www.apache.org/licenses/LICENSE-2.0
  
