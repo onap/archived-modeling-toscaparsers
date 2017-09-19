@@ -16,9 +16,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.onap.tosca</groupId>
+    <groupId>org.onap.modeling.toscaparsers</groupId>
     <artifactId>checker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>Checker</artifactId>
   <packaging>jar</packaging>
@@ -79,7 +79,7 @@
 			<plugin>
        	<groupId>org.apache.maven.plugins</groupId>
        	<artifactId>maven-jar-plugin</artifactId>
-       	<version>2.1</version>
+       	<version>3.0.2</version>
        	<configuration>
          	<archive>
            	<manifest>
@@ -120,19 +120,6 @@
        	</executions>
      	</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-			</plugin>
-
      	<plugin>
        	<groupId>org.apache.maven.plugins</groupId>
        	<artifactId>maven-javadoc-plugin</artifactId>
@@ -142,27 +129,6 @@
          	<windowtitle>API for ${project.name} ${project.version}</windowtitle>
        	</configuration>
      	</plugin>
-
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<extensions>true</extensions>
-				<configuration>
-					<nexusUrl>${nexusproxy}</nexusUrl>
-					<stagingProfileId>176c31dfe190a</stagingProfileId>
-					<serverId>ecomp-staging</serverId>
-				</configuration>
-			</plugin>
-
-			<!-- replace by the sonatype plugin ? 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip />
-				</configuration>
-			</plugin>
-			-->
 
 			<!-- blackduck maven plugin -->
 			<!--
@@ -237,9 +203,9 @@
     	<version>[0.9.11,)</version>
 		</dependency>
 		<dependency>
-			<groupId>org.onap.tosca</groupId>
+			<groupId>org.onap.modeling.toscaparsers</groupId>
   	  <artifactId>kwalify</artifactId>
-  	  <version>0.0.1-SNAPSHOT</version>
+  	  <version>1.0.0-SNAPSHOT</version>
    	</dependency>
   </dependencies>
 </project>

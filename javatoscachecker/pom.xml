@@ -18,9 +18,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
                              http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
- 	<groupId>org.onap.tosca</groupId>
+
+	<parent>
+		<groupId>org.onap.oparent</groupId>
+		<artifactId>oparent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath/>
+	</parent>
+
+ 	<groupId>org.onap.modeling.toscaparsers</groupId>
  	<artifactId>checker</artifactId>
- 	<version>0.0.1-SNAPSHOT</version>
+ 	<version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>TOSCA Checker tools</name>
 
@@ -55,14 +63,9 @@
 		</site>
 	</distributionManagement>
 	
-  <scm>
- 		<connection>scm:git:https://</connection>
- 		<developerConnection>scm:git:https://</developerConnection>
- 		<tag>HEAD</tag>
- 		<url>https://</url>
- 	</scm>
 
 <!-- Black Duck plugin dependencies -->
+<!--
 	<pluginRepositories>
 		<pluginRepository>
 			<id>JCenter</id>
@@ -76,5 +79,30 @@
 			<url>http://maven.restlet.com</url>
 		</pluginRepository>
 	</pluginRepositories>
+-->
+
+	<build>
+		<plugins>
+<!--
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<nexusUrl>${nexusproxy}</nexusUrl>
+					<stagingProfileId>176c31dfe190a</stagingProfileId>
+					<serverId>ecomp-staging</serverId>
+				</configuration>
+			</plugin>
+-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip />
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
