@@ -66,7 +66,7 @@ class TopologyTemplate(object):
     def _inputs(self):
         inputs = []
         for name, attrs in self._tpl_inputs().items():
-            input = Input(name, attrs)
+            input = Input(name, attrs, self.custom_defs)
             if self.parsed_params and name in self.parsed_params:
                 input.validate(self.parsed_params[name])
             else:

@@ -23,13 +23,14 @@ class TypeValidation(object):
                              DATA_TYPES, ARTIFACT_TYPES, GROUP_TYPES,
                              RELATIONSHIP_TYPES, CAPABILITY_TYPES,
                              INTERFACE_TYPES, POLICY_TYPES,
-                             TOPOLOGY_TEMPLATE) = \
+                             TOPOLOGY_TEMPLATE, METADATA) = \
         ('tosca_definitions_version', 'description', 'imports',
          'dsl_definitions', 'node_types', 'repositories',
          'data_types', 'artifact_types', 'group_types',
          'relationship_types', 'capability_types',
-         'interface_types', 'policy_types', 'topology_template')
-    VALID_TEMPLATE_VERSIONS = ['tosca_simple_yaml_1_0']
+         'interface_types', 'policy_types', 'topology_template', 'metadata')
+    VALID_TEMPLATE_VERSIONS = ['tosca_simple_yaml_1_0',
+                               'tosca_simple_yaml_1_1']
     exttools = ExtTools()
     VALID_TEMPLATE_VERSIONS.extend(exttools.get_versions())
 

@@ -32,9 +32,10 @@ class Input(object):
                                    'constraints', 'required', 'status',
                                    'entry_schema')
 
-    def __init__(self, name, schema_dict):
+    def __init__(self, name, schema_dict, custom_defs=None):
         self.name = name
         self.schema = Schema(name, schema_dict)
+        self.custom_defs = custom_defs or {}
 
         self._validate_field()
         self.validate_type(self.type)
@@ -75,7 +76,8 @@ class Input(object):
                                       field=name))
 
     def validate_type(self, input_type):
-        if input_type not in Schema.PROPERTY_TYPES:
+        if input_type not in Schema.PROPERTY_TYPES and \
+            input_type not in self.custom_defs:
             ExceptionCollector.appendException(
                 ValueError(_('Invalid type "%s".') % type))
 
@@ -89,6 +91,8 @@ class Input(object):
             datatype = tosca[self.type]
         elif EntityType.DATATYPE_NETWORK_PREFIX + self.type in tosca:
             datatype = tosca[EntityType.DATATYPE_NETWORK_PREFIX + self.type]
+        elif self.type in self.custom_defs:
+            datatype = self.custom_defs
 
         DataEntity.validate_datatype(self.type, value, None, datatype)
 

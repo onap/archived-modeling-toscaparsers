@@ -83,8 +83,6 @@ class NodeType(StatefulEntityType):
                                 captype = value['capability']
                                 value = (self.
                                          _get_node_type_by_cap(captype))
-                            #            _get_node_type_by_cap(key, captype))
-                            # relation = self._get_relation(key, value)
                             keyword = key
                             node_type = value
                 rtype = RelationshipType(relation, keyword, self.custom_def)

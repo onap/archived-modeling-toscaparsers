@@ -14,4 +14,4 @@ import pbr.version
 
 
 __version__ = pbr.version.VersionInfo(
-    'tosca-parser').version_string()
+    'nfv-toscaparser').version_string()
