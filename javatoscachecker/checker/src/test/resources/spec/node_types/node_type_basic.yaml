@@ -1,0 +1,26 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+
+metadata:
+  outcome: "success"
+ 
+node_types:
+  org.onap.tosca.checker.Appliance:
+    properties:
+      brand:
+        type: string
+        required: true
+      color:
+        type: string
+        required: true
+      warrantyDuration:
+        type: string
+        required: true
+      price:
+        type: float
+        required: true
+      power_type:
+        type: string
+        default: "electric"
+        constraints:
+          - valid_values: ["electric", "gas"]
+

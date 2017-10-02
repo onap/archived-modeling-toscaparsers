@@ -3651,7 +3651,7 @@ System.out.println(" **** unassigned -> " + unassignedEntry.getKey() + " : " + u
 		private String				defaultImportsPath = null;
 		private List<String>	grammars = new LinkedList<String>();
 
-		protected CheckerConfiguration() {
+		public CheckerConfiguration() {
 			withGrammars(Checker.grammarFiles);
 		}
 
