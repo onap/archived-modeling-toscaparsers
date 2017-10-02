@@ -1,0 +1,27 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+description: expected to fail as this redeclares a common type (and the checker provides them by default)
+
+metadata:
+  outcome: "fail"
+  
+data_types:
+
+  tosca.datatypes.Credential:
+    derived_from: tosca.datatypes.Root
+    properties:
+      protocol:
+        type: string
+        required: false
+      token_type:
+        type: string
+        default: password
+      token:
+        type: string
+      keys:
+        type: map
+        required: false
+        entry_schema:
+          type: string
+      user:
+        type: string
+        required: false

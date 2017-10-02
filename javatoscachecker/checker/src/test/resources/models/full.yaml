@@ -1,0 +1,107 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+description: full service template
+
+data_types:
+
+  data_type_1:
+    derived_from: tosca.datatypes.Root
+    properties:
+      data_field_11:
+        type: string
+      data_field_12:
+        type: integer
+
+  data_type_2:
+    derived_from: data_type_1
+    properties:
+      data_field_21:
+        type: string
+
+capability_types:
+
+  capability_type_1:
+    derived_from: tosca.capabilities.Root
+    properties:
+      capability_type_1_property_1:
+        type: string
+   
+  capability_type_2:
+    derived_from: tosca.capabilities.Root
+    properties:
+      capability_type_2_property_1:
+        type: string
+
+node_types:
+
+  node_type_1:
+    properties:
+      node_type_1_property_1:
+        type: data_type_1
+    capabilities:
+      node_type_1_capability_1:
+        type: capability_type_1
+    requirements:
+      - node_type_1_requirement_2:
+          capability: capability_type_2
+#         relationship:  
+
+  node_type_2:
+    properties:
+      node_type_2_property_1:
+        type: data_type_2
+    capabilities:
+      node_type_2_capability_2:
+        type: capability_type_2
+
+interface_types:
+
+  interface_type_1:
+    derived_from: tosca.interfaces.Root
+    description: test interface type
+#    inputs:
+#      interface_type_1_input_1:
+#        type: string
+    interface_type_1_op_1:
+      description: test interface operation
+
+relationship_types:
+
+  relationship_type_1:
+    derived_from: tosca.relationships.ConnectsTo
+    description: test relationship type
+    interfaces:
+      relationship_type_1_interface_1:
+        type: interface_type_1
+
+topology_template:
+
+  node_templates:
+
+    node_1:
+      type: node_type_1
+      properties:
+        node_type_1_property_1: { data_field_11: "11", data_field_12: 12 }
+      requirements:
+        - node_type_1_requirement_2:
+            node_filter:
+              capabilities:
+                - two:
+                    properties:
+                      - capability_type_2_property_1: { equal: "value2" }
+
+    node_2:
+      type: node_type_2
+      properties:
+        node_type_2_property_1: { data_field_11: "11", data_field_12: 12, data_field_21: "21" }
+      capabilities:
+        node_type_2_capability_2:
+          properties:
+            capability_type_2_property_1: value_2
+
+  relationship_templates:
+
+    relationship_1:
+      type: relationship_type_1
+#      interfaces:
+#        relationship_type_1_interface_1:
+

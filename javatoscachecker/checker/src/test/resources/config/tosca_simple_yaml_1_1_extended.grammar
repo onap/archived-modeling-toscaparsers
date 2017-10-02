@@ -1,0 +1,1656 @@
+#
+# This is an example of an extension added to the standard 1.1 grammar
+# We add the keyword annotations (as a list) to node templates (as an example).
+# look in the node_template_definition rule
+#
+
+_status_values: &status_values  
+  enum:
+    - supported
+    - unsupported
+    - experimental
+    - deprecated
+
+#I do not know that the lists and maps qualify as 'primitive' ..
+_primitive_types: &primitive_types
+  enum: [string,integer,float,boolean,timestamp,list,map,version,range,scalar-unit.size,scalar_unit.frequency,scalar_unit.time]
+
+#needs custom validation as we have to make sure there are 2 elements and allow for the
+#UNBOUNDED keyword as second element
+_range_definition: &range_definition
+  desc: "Section used to declare additional metadata information"
+  required: no
+  type: seq
+  size: 2
+  name: range_definition
+  sequence:
+    - type: scalar
+
+_version_definition: &version_definition
+  desc: "An optional TOSCA version number"
+  required: no
+  type: str
+  name: version_definition
+#  pattern: <major_version>.<minor_version>[.<fix_version>[.<qualifier>[-<build_version] ] ]
+
+#common metadata defintion syntax
+_metadata_definition: &metadata_definition
+  desc: "Section used to declare additional metadata information"
+  required: no
+  type: map
+  mapping:
+    =:
+      type: str
+
+#see A.5.2
+#this is where the need of verifying the size of a collection (sequence/map) came from
+#this is specified as a sequence where each entry is a map with one entry??
+_constraints_sequence: &constraints_sequence
+  name: constraints_sequence
+  short: 0
+  type: seq
+  sequence:
+    - type: map
+#      length: 1
+      mapping:
+        equal:
+          desc: "Constrains a property or parameter to a value equal to the value declared."
+          type: any
+          required: no
+        greater_than:
+          desc: "Constrains a property or parameter to a value greater than the value declared"
+          type: scalar
+          required: no
+        greater_or_equal:
+          desc: "Constrains a property or parameter to a value greater than or equal to the value declared."
+          type: scalar
+          required: no
+        less_than:
+          desc: "Constrains a property or parameter to a value less than the value declared"
+          type: scalar
+          required: no
+        less_or_equal:
+          desc: "Constrains a property or parameter to a value less than or equal to the value declared."
+          type: scalar
+          required: no
+        in_range:
+          desc: "Constrains a property or parameter to a value in range of (inclusive) the two values declared."
+          type: seq
+#          length: 2
+          sequence:
+            - type: scalar
+          required: no
+        valid_values:
+          desc: "Constrains a property or parameter to a value that is in the list of declared values"
+          type: seq
+          sequence:
+            - type: scalar
+          required: no
+        length:
+          desc: "Constrains the property or parameter to a value of a given length."
+          type: int
+          required: no
+        min_length:
+          desc: "Constrains the property or parameter to a value to a minimum length"
+          type: scalar
+          required: no
+        max_length:
+          desc: "Constrains the property or parameter to a value to a maximum length"
+          type: scalar
+          required: no
+        pattern:    
+          desc: "Constrains the property or parameter to a value that is allowed by the provided regular expression."
+          type: str
+          required: no
+
+# section A.5.3 property_filter_definition
+# it is a constraints sequence that gets attached to a property ..
+_property_filter_definition: &property_filter_definition
+  name: property_filter_definition
+  type: map
+  mapping:
+    =:
+      *constraints_sequence
+
+#section A.5.4 node_filter_definition
+_node_filter_definition: &node_filter_definition
+  type: map
+  name: node_filter_definition
+  mapping:
+    properties:
+      desc: "property names to constraints to be applied to those properties"
+      required: no
+      type: seq
+      sequence:
+         - *property_filter_definition
+#        - type: map
+#          mapping: 
+#            =:
+#              *constraints_sequence
+    capabilities:
+      desc: ""
+      required: no
+      type: seq
+      sequence:
+        - type: map
+          name: node_filter_capabilities_sequence
+          desc: "the key is a capability name or type"
+          mapping:
+            =: 
+              name: node_filter_capabilities_entry
+              type: map
+              mapping:
+                properties:
+                  desc: "the capability properties and their constraints"
+                  name: node_filter_capabilities_properties
+                  type: seq        
+                  sequence:
+                    - type: map
+                      name: node_filter_capabilities_property
+                      mapping:
+                        =: *constraints_sequence
+
+#used in property and attribute definitions
+_entry_schema_definition: &entry_schema_definition
+  desc: "The optional key that is used to declare the name of the Datatype definition for entries of set types such as the TOSCA list or map"
+  name: entry_schema_definition
+  required: no
+  type: map
+  short: type
+  mapping: 
+    "type":
+      desc: "collection element type"
+      required: yes
+      type: str
+    description:
+      required: no
+      type: str
+    constraints:
+      *constraints_sequence
+
+# see section 3.5.6
+# it is strange that an artifact type defined a set of properties but here there is no place for their assignments ..
+_artifact_definition: &artifact_definition
+  type: map
+  name: artifact_definition
+  short: implementation # assumes type can be inferred ..
+  mapping:
+    "type":
+      desc: "The required artifact type for the artifact definition"
+      required: yes
+      type: str
+    description:
+      desc: "The optional description for the artifact definition"
+      required: no
+      type: str
+    file:
+      desc: "The optional URI string (relative or absolute) which can be used to locate the artifacts file."
+      required: no
+      type: str
+    repository:
+      desc: "The optional name of the repository definition which contains the location of the external repository that contains the artifact"
+      required: no
+      type: str
+    deploy_path:    
+      desc: "The file path the associated file would be deployed into within the target nodes container."
+      required: no
+      type: str
+
+# see section 3.5.5
+_repository_definition: &repository_definition
+  type: map
+  name: repository_definition
+  short: url
+  mapping:
+    description:
+      desc: "The optional description for the repository."
+      required: no
+      type: str
+    url:
+      desc: "The required URL or network address used to access the repository"
+      required: yes
+      type: str
+    credential:
+      #this is the specification of the data type tosca.datatypes.Credential
+      desc: "The optional Credential used to authorize access to the repository"
+      required: no
+      type: map
+      mapping:
+        protocol:
+          required: no
+          type: str
+        token_type:
+          required: no
+          type: str
+          #default: password
+        token:
+          required: no
+          type: str
+        keys:
+          required: no
+          type: map
+          mapping:
+            =:
+              type: str
+        user:
+          required: no
+          type: str
+
+#see section 3.5.7
+_import_definition: &import_definition
+  type: map
+  name: import_definition
+  short: file
+  mapping:
+    file:
+      desc: "file URI"
+      required: yes
+      type: str
+    repository:
+      desc: "symbolic name of the repository definition where the imported file can be found"
+      required: no
+      type: str
+    namespace_uri:
+      desc: "namespace URI to that will be applied to type definitions found within the imported file"
+      required: no
+      type: str
+    namespace_prefix:
+      desc: "optional namespace prefix (alias) that will be used to indicate the namespace_uri when forming a qualified name (i.e., qname) when referencing type definitions from the imported"
+      required: no
+      type: str
+
+#see section 3.5.8
+_property_definition: &property_definition
+  type: map
+  name: property_definition
+  mapping:
+    "type":
+      type: str
+      required: yes
+#not as easy, it can be an user defined data type
+#      <<: *primitive_types
+    description:
+      type: str
+      required: no
+    constraints:
+      desc: "The optional list of sequenced constraint clauses for the Data Type."
+      required: no
+      <<: *constraints_sequence
+    default:
+      type: any
+      required: no
+    "required":
+      type: bool
+      required: no
+    status:
+      type: str
+      required: no
+      <<: *status_values
+    entry_schema:
+      <<: *entry_schema_definition
+#      desc: "used to declare the name of the Datatype definition for entries of set types such as the TOSCA list or map."
+#      type: str
+#      required: no
+
+
+#see 3.5.10
+_attribute_definition: &attribute_definition
+  type: map
+  name: attribute_definition
+  mapping:
+    "type":
+      type: str
+      required: yes
+#      <<: *primitive_types
+    description:
+      type: str
+      required: no
+    default:
+      type: any
+      required: no
+    status:
+      desc: "The optional status of the attribute relative to the specification or implementation"
+      type: str
+      required: no
+      <<: *status_values
+    entry_schema:
+      <<: *entry_schema_definition
+#      desc: "Used to declare the name of the Datatype definition for entries of set types such as the TOSCA list or map"
+#      type: str
+#      required: no
+
+#see section 3.5.11
+#here again, we must support the short form which is the most common
+_attribute_assignment_definition: &attribute_assignment_definition
+  type: map
+  name: attribute_assignment_definition
+  mapping:
+    description:
+      desc: "The optional description of the attribute."
+      required: no
+      type: str
+    value:
+#actually 'value | value_expression'
+      desc: "represent the type-compatible value to assign to the named attribute. Attribute values may be provided as the result from the evaluation of an expression or a function"
+      required: yes
+      type: any
+
+
+#see 3.5.12
+_parameter_definition: &parameter_definition
+  type: map
+  name: parameter_definition
+  mapping:
+    "type":
+      type: str
+      required: no
+#not as easy, it can be an user defined data type
+#      <<: *primitive_types
+    description:
+      type: str
+      required: no
+    constraints:
+      desc: "The optional list of sequenced constraint clauses for the Data Type."
+      required: no
+      <<: *constraints_sequence
+    default:
+      type: any
+      required: no
+    "required":
+      type: bool
+      required: no
+    status:
+      type: str
+      required: no
+      <<: *status_values
+    value:
+      desc: "represent the type-compatible value to assign to the named parameter. Parameter values may be provided as the result from the evaluation of an expression or a function"
+      required: yes
+      type: any
+    entry_schema:
+      <<: *entry_schema_definition
+
+
+
+
+# see spec section 3.5.13
+
+# see spec section 3.5.13.2: variant to be used in node or relationship type definitions 
+_type_operation_definition: &type_operation_definition
+  type: map
+  name: type_operation_definition
+  short: implementation
+  mapping:
+    description:
+      desc: "The optional description string for the associated named operation."
+      required: no
+      type: str
+    implementation:
+      desc: "The optional implementation artifact name (e.g., a script file name within a TOSCA CSAR file)"
+      required: no
+      type: str
+    inputs:
+      desc: ""
+      required: no
+      type: map
+      mapping:
+        =:
+          desc: "a property value or an expression providing a input value"
+          name: property_assignment
+          type: any
+
+# from 3.5.13.2.3
+_template_operation_definition: &template_operation_definition
+  type: map
+  name: template_operation_definition
+  short: implementation
+  mapping:
+    description:
+      desc: "The optional description string for the associated named operation."
+      required: no
+      type: str
+    implementation:
+      desc: "The optional implementation artifact name (e.g., a script file name within a TOSCA CSAR file)"
+      name: template_operation_implementation_definition
+      required: no
+      short: primary
+      type: map
+      mapping:
+        primary:
+          desc: "The optional implementation artifact name (e.g., the primary script file name within a TOSCA CSAR file). "
+          required: no
+          type: str
+        dependencies:
+          desc: "The optional list of one or more dependent or secondary implementation artifact name which are referenced by the primary implementation artifact (e.g., a library the script installs or a secondary script)"
+          required: no
+          type: seq
+          sequence: 
+            - type: str
+    inputs:
+      desc: ""
+      required: no
+      type: map
+      mapping:
+        =:
+          desc: "a property value or an expression providing a input value"
+          name: property_assignment
+          type: any
+
+
+# see section 3.5.14, specifically 3.5.14.2.1 : definition to be used in node or relationship type definition
+_type_interface_definition: &type_interface_definition
+  type: map
+  name: type_interface_definition
+  mapping:
+    "type":
+      desc: "represents the required name of the Interface Type for the interface definition"
+      required: yes
+      type: str
+    inputs:
+      desc: "The optional list of input property definitions available to all defined operations"
+      type: map
+      mapping:
+        =:
+          *property_definition
+    =:
+      *type_operation_definition
+
+# see section 3.5.14.2.2, extended notation to be used in node or relationship template definitions
+_template_interface_definition: &template_interface_definition
+  type: map
+  name: template_interface_definition
+  mapping:
+    inputs:
+      desc: "The optional list of input property definitions available to all defined operations"
+      type: map
+      mapping:
+        =:
+          desc: "a property value or an expression providing a property value"
+          name: property_assignment
+          type: any
+    =:
+      *template_operation_definition
+
+# see section 3.5.15
+_event_filter_definition: &event_filter_definition
+  type: map
+  name: event_filter_definition
+  mapping:
+    node:
+      desc: "The required name of the node type or template that contains either the attribute to be monitored or contains the requirement  that references the node that contains the attribute to be monitored"
+      required: yes
+      type: str
+    requirement:
+      desc: "The optional name of the requirement within the filter’s node that can be used to locate a referenced node that contains an attribute to monitor."
+      required: no
+      type: str
+    capability:
+      desc: "The optional name of a capability within the filter’s node or within the node referenced by its requirement that contains the attribute to monitor."
+      required: no
+      type: str
+
+# see section 3.5.16
+# to be revised, based on working version
+_trigger_definition: &trigger_definition
+  type: map
+  name: trigger_definition
+  mapping:
+    description:
+      desc: ""
+      required: no
+      type: str
+    event_type:
+      desc: "The required name of the event type that activates the trigger’s action."
+      required: yes
+      short: type
+      type: map
+      mapping:
+        type:
+          required: yes
+          type: str
+    schedule:
+      desc: ""
+      required: no
+      type: str
+    target_filter:
+      desc: ""
+      required: no
+      <<: *event_filter_definition
+#the section made up of condition/constraint/period/evaluations/method has a mistmatching example in the spec doc ..
+    condition:
+      desc: ""
+      required: no
+      <<: *constraints_sequence
+    constraint:
+      desc: ""
+      required: no
+      <<: *constraints_sequence
+    period:
+      desc: "The optional period to use to evaluate for the condition"
+      required: no
+      type: int
+    evaluations:
+      desc: ""
+      required: no
+      type: int
+    method:
+      desc: "The optional statistical method name to use to perform the evaluation of the condition"
+      required: no
+      type: str
+    action:
+      desc: "The if of the workflow to be invoked when the event is triggered and the condition is met (i.e, evaluates to true) OR the required operation to invoke when the event is triggered and the condition is met (i.e., evaluates to true)."
+      required: yes
+      type: str # or operation definition?
+
+
+# see section 3.5.17
+# to be revised, based on working version
+# example on 3.5.17.4 shows this as a sequence of maps
+# the map must a length/size of 1: none of the entries is required bjut one must be present (mutually exclusive)
+_workflow_activity_definition: &workflow_activity_definition
+  type: map
+  short: call_operation
+  name: workflow_activity_definition
+#  size: 1
+  mapping:
+    delegate:
+      desc: ""
+      required: no
+      type: str
+    set_state:
+      desc: ""
+      required: no
+      type: str
+    call_operation:
+      desc: ""
+      required: no
+      type: str
+    inline:
+      desc: ""
+      required: no
+      type: str
+
+
+# see section 3.5.18
+# to be revised, based on working version
+_workflow_assertion_definition: &workflow_assertion_definition
+  name: workflow_assertion_definition
+  type: map
+  mapping:
+    =:
+      *constraints_sequence
+
+
+# see section 3.5.19
+# to be revised, based on working version
+# it employs a recursive definition which yaml allows but the parsers we've tried complain about, i.e the pattern
+#    foo: &foo
+#      bar: *foo
+# is theoretically allowed in YAML
+# we have enabled recursive defintions in kwalify through reference rules.
+# the spec is 'vague': it assumes a logical 'AND' between the entries of the top sequence of the rule
+_workflow_condition_clause_definition: &workflow_condition_clause_definition
+  name: workflow_condition_clause_definition
+  type: seq
+  sequence: &workflow_condition_clause_entry
+    - type: map
+      name: workflow_condition_clause_entry
+      mapping:
+        assert:
+          type: seq
+          sequence:
+            - *workflow_assertion_definition
+        and:
+          type: ref
+          rule: workflow_condition_clause_definition
+          # recursive definition ! yaml parser cannot deal with it
+          # <<: *workflow_condition_clause_definition
+             
+        or:
+          type: ref
+          rule: workflow_condition_clause_definition 
+          # recursive definition ! yaml parser cannot deal with it
+          # <<: *workflow_condition_clause_definition
+
+# see section 3.5.20
+# to be revised, based on working version
+# here too, not clear if this a map or a sequence .. there is no example
+_workflow_precondition_definition: &workflow_precondition_definition
+  name: workflow_precondition_definition
+  type: map
+  mapping:
+    target:
+      required: yes
+      type: str
+    target_relationship:
+      required: no
+      type: str
+    condition:
+      desc: "list of condition clause definition .. !@#$%"
+      <<: *workflow_condition_clause_definition
+
+
+# see section 3.5.21
+# to be revised, based on working version
+_workflow_step_definition: &workflow_step_definition
+  name: workflow_step_definition
+  desc: "A workflow step allows to define one or multiple sequenced activities in a workflow and how they are connected to other steps in the workflow. They are the building blocks of a declarative workflow."
+  type: map
+  mapping:
+    target:
+      required: yes
+      type: str
+      desc: "The target of the step (this can be a node template name, a group name)"
+    target_relationship:
+      required: no
+      type: str
+    operation_host:
+      required: no
+      type: str
+    filter:
+      desc: "Filter is a map of attribute name, list of constraint clause that allows to provide a filtering logic"
+      type: map
+      mapping:
+        =:
+          *constraints_sequence
+    activities:
+      desc: "The list of sequential activities to be performed in this step"
+      type: seq
+      sequence:
+        - *workflow_activity_definition
+    on_success:
+      desc: "The optional list of step names to be performed after this one has been completed with success (all activities has been correctly processed)."
+      type: seq
+      sequence:
+        - type: str
+    on_failure:
+      desc: "The optional list of step names to be called after this one in case one of the step activity failed."
+      type: seq
+      sequence:
+        - type: str
+
+
+
+
+# 3.6 section: type specific definitions
+
+# see section 3.6.2
+_capability_definition: &capability_definition
+  type: map
+  name: capability_definition
+  short: type
+  mapping:
+    "type":
+      desc: "The required name of the Capability Type the capability definition is based upon"
+      required: yes
+      type: str
+    description:
+      desc: "The optional description of the Capability definition"
+      required: no
+      type: str
+    properties:
+      desc: ""
+      required: no
+      type: map
+      mapping:
+       =:
+          *property_definition
+    attributes:
+      desc: "An optional list of property definitions for the Capability definition"
+      required: no
+      type: map
+      mapping:
+        =:
+          *attribute_definition
+    valid_source_types:
+      desc: ""
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    occurrences:
+      desc: "The optional minimum and maximum occurrences for the capability."
+      required: no
+      <<: *range_definition
+
+
+
+
+# see section 3.6.3
+#
+_requirement_definition: &requirement_definition
+  type: map
+  name: requirement_definition
+  short: capability  #as per A.6.2.2.1
+  mapping:
+    capability:
+      desc: "The required reserved keyname used that can be used to provide the name of a valid Capability Type that can fulfil the requirement"
+      required: yes
+      type: str
+    node:
+      desc: "The optional reserved keyname used to provide the name of a valid Node Type that contains the capability definition that can be used to fulfil the requirement. "
+      required: no
+      type: str
+    relationship:
+# and from section A.6.2.1, this one is an oddball
+      desc: "The optional reserved keyname used to provide the name of a valid Relationship Type to construct when fulfilling the requirement."
+      required: no
+      name: requirement_relationship_definition
+      short: type
+      type: map
+      mapping:
+        type:
+          desc: "The optional reserved keyname used to provide the name of the Relationship Type for the requirement definitions relationship keyname.
+"
+          required: yes
+          type: str
+        interfaces:
+          #not clear which interface definition is to be used here
+          desc: "allows augmentation (additional properties and operations) of the interfaces defined by the relationship type indicated above"
+          required: no
+          type: map
+          mapping:
+            =:
+              *type_interface_definition
+    occurrences:
+      desc: "The optional minimum and maximum occurrences for the requirement."
+      required: no
+      <<: *range_definition
+
+# see section 3.6.4
+_artifact_type_definition: &artifact_type_definition
+  type: map
+  name: artifact_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent Artifact Type name the Artifact Type derives from"
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    description:
+      desc: "An optional description for the Artifact Type."
+      required: no
+      type: str
+    mime_type:
+      desc: "The required mime type property for the Artifact Type."
+      required: no
+      type: str
+    file_ext:
+      desc: "The required file extension property for the Artifact Type"
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    properties:
+      desc: "An optional list of property definitions for the Artifact Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+
+#see spec section #3.6.5
+_interface_type_definition: &interface_type_definition
+  type: map
+  name: interface_type_definition
+  mapping:
+    derived_from:
+      desc: "The name of the Interface Type this Interface Type definition derives from"
+      required: no
+      type: str
+    description:
+      desc: "The optional description for the Interface Type."
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    inputs:
+      desc: "The optional list of input property definitions available to all defined operations"
+      type: map
+      mapping:
+        =:
+          type: str
+          desc: "property_name to property_value(_expression) mapping"
+    =:
+      *type_operation_definition
+
+#see spec section #3.6.6
+_data_type_definition: &data_type_definition
+  type: map
+  name: data_type_definition
+  mapping:
+    derived_from:
+      desc: "The optional key used when a datatype is derived from an existing TOSCA Data Type."
+      required: no
+      type: str
+    description:
+      desc: "The optional description for the Data Type."
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    constraints:
+      desc: "The optional list of sequenced constraint clauses for the Data Type."
+      <<: *constraints_sequence
+    properties:
+      desc: "The optional list property definitions that comprise the schema for a complex Data Type in TOSCA"
+      type: map
+      mapping:
+        =:
+          *property_definition
+
+# see section 3.6.7
+_capability_type_definition: &capability_type_definition
+  type: map
+  name: capability_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent capability type name this new Capability Type derives from."
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    description:
+      desc: "An optional description for the Capability Type"
+      required: no
+      type: str
+    properties:
+      desc: "An optional list of property definitions for the Capability Type."
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    attributes:
+      desc: "An optional list of attribute definitions for the Capability Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *attribute_definition
+    valid_source_types:
+      desc: "An optional list of one or more valid names of Node Types that are supported as valid sources of any relationship established to the declared Capability Type"
+      required: no
+      type: seq
+      sequence:
+        - type: str
+
+# section A.6.7 requirement definition: TOSCA YAML profile relies on capability types to 
+# define requirements 
+
+# see section #3.6.10
+_relationship_type_definition: &relationship_type_definition
+  type: map
+  name: relationship_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent Relationship Type name the Relationship Type derives from"
+      required: no
+      type: str
+    description:
+      desc: "An optional description for the Relationship Type."
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "An optional list of property definitions for the Relationship Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    attributes:
+      desc: "An optional list of attribute definitions for the Relationship Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *attribute_definition
+    interfaces:
+      desc: "An optional list of interface definitions interfaces supported by the Relationship Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *type_interface_definition
+    valid_target_types:
+      desc: "An optional list of one or more names of Capability Types that are valid targets for this relationship. "
+      required: no
+      type: seq
+      sequence:
+        - type: str
+
+#see section 3.6.11
+_group_type_definition: &group_type_definition
+  type: map
+  name: group_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent Group Type name this new Group Type derives from"
+      required: no
+      type: str
+    description:
+      desc: "An optional description for the Group Type"
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "An optional list of property definitions for the Group Type."
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    members:
+      desc: "An optional list of one or more names of Node Types that are valid
+(allowed) as members of the Group Type."
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    interfaces:
+      desc: "An optional list of interface definitions supported by the Group Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *type_interface_definition
+    requirements:
+      desc: "An optional sequenced list of requirement definitions for the Group Type."
+      required: no
+      type: seq
+      sequence:
+        - type: map
+          mapping:
+            =:
+              *requirement_definition
+    capabilities:
+      desc: "An optional list of capability definitions for the Group Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *capability_definition
+
+
+
+#see section 3.6.12
+_policy_type_definition: &policy_type_definition
+  type: map
+  name: policy_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent Policy Type name this new Policy Type derives from"
+      required: no
+      type: str
+    description:
+      desc: "An optional description for the Policy Type"
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "An optional list of property definitions for the Policy Type."
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    targets:
+      desc: "An optional list of valid Node Types or Group Types the Policy Type
+can be applied to"
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    triggers:
+      desc: "List of trigger defintions"
+      required: no
+      type: seq
+      sequence:
+        - *trigger_definition
+
+
+# see section #3.6.9
+_node_type_definition: &node_type_definition
+  type: map
+  name: node_type_definition
+  mapping:
+    derived_from:
+      desc: "An optional parent Node Type name this new Node Type derives from"
+      required: no
+      type: str
+    description:
+      desc: "An optional description for the Node Type"
+      required: no
+      type: str
+    version:
+      <<: *version_definition
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "An optional list of property definitions for the Node Type."
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    attributes:
+      desc: "An optional list of attribute definitions for the Node Type.
+"
+      required: no
+      type: map
+      mapping:
+        =:
+          *attribute_definition
+    requirements:
+      desc: "An optional sequenced list of requirement definitions for the Node Type.
+"
+      required: no
+      type: seq
+      sequence:
+        - type: map
+          mapping:
+            =:
+              *requirement_definition
+    capabilities:
+      desc: "An optional list of capability definitions for the Node Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *capability_definition
+    interfaces:
+      desc: ""
+      required: no
+      type: map
+      mapping:
+        =:
+          *type_interface_definition
+    artifacts:
+      desc: "An optional list of named artifact definitions for the Node Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *artifact_definition
+
+# 3.7 Template specific definitions
+
+# see section 3.7.1
+_capability_assignment_definition: &capability_assignment_definition
+  type: map
+  name: capability_assignment_definition
+  mapping:
+    properties:
+      # list of property assignments
+      desc: "An optional list of property definitions for the Capability definition"
+      required: no
+      type: map
+      mapping:
+        =:
+          desc: "a property value or an expression providing a property value"
+          name: property_assignment
+          type: any
+    attributes:
+      # list of attribute assignments
+      desc: "An optional list of attribute definitions for the Capability definition"
+      required: no
+      type: map
+      mapping:
+        =:
+          desc: ""
+          name: attribute_assignment
+          type: any
+
+# see section 3.7.2
+_requirement_assignment_definition: &requirement_assignment_definition
+  type: map
+  name: requirement_assignment_definition
+  short: node
+  mapping:
+    capability:
+      desc: " used to provide the name of either a: Capability definition within a target node template that can fulfill the requirement or Capability Type that the provider will use to select a type-compatible target node template to fulfill the requirement at runtime."
+      required: no
+      type: str
+    node:
+#why is this a reference to a node type and not to a node template??
+      desc: "used to identify the target node of a relationship: Node Template name that can fulfil the target node requirement or Node Type name that the provider will use to select a type-compatible node template to fulfil the requirement at runtime"
+      required: no
+      type: str
+    relationship:
+      desc: ""
+      required: no
+#fins a better name      name: relationship_definition
+      type: map
+      short: type
+      mapping:
+        "type":
+          desc: "The optional reserved keyname used to provide the name of the Relationship Type for the requirement assignments relationship keyname"
+          required: no
+          type: str
+        properties:
+          desc: ""
+          required: no
+          type: map
+          mapping:
+            =:
+              desc: "a property value or an expression providing a property value"
+              name: property_assignment
+              type: any
+        interfaces:
+          desc: "from A.5.12.2.2, right?"
+          required: no
+          type: map
+          mapping:
+            =:
+              *template_interface_definition
+    node_filter:
+      desc: "The optional filter definition that TOSCA orchestrators or providers would use to select a type-compatible target node that can fulfill the associated abstract requirement at runtime."
+      required: no
+      <<: *node_filter_definition
+
+# see section 3.7.3
+_node_template_definition: &node_template_definition
+  type: map
+  name: node_template_definition
+  mapping:
+    "type":
+      desc: "The required name of the Node Type the Node Template is based upon"
+      required: yes
+      type: str
+    description:
+      desc: "An optional description for the Node Template"
+      required: no
+      type: str
+    metadata:
+      <<: *metadata_definition
+    directives:
+      desc: "An optional list of directive values to provide processing instructions to orchestrators and tooling."
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    annotations:
+      desc: "Sample extension"
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    properties:
+#custom check needs to be added: the value or expression providing the property value
+#needs to be compatible with the property definition
+      desc: "An optional list of property value assignments for the Node Template."
+      required: no
+      type: map
+      mapping:
+        =:
+          type: any
+          name: property_assignment
+          desc: "a property value or an expression providing a property value"
+    attributes:
+      desc: "An optional list of attribute value assignments for the Node Template"
+      required: no
+      type: map
+      mapping:
+        =:
+          *attribute_assignment_definition
+    requirements:
+      desc: "An optional sequenced list of requirement assignments for the Node Template."
+      required: no
+      type: seq
+      sequence:
+        - type: map
+          mapping:
+            =:
+              *requirement_assignment_definition
+    capabilities:
+      desc: "An optional list of capability assignments for the Node Template."
+      required: no
+      type: map
+      mapping:
+        =:
+          *capability_assignment_definition
+    interfaces:
+      desc: "An optional list of named interface definitions for the Node Template"
+      required: no
+      type: map
+      mapping:
+        =:
+          *template_interface_definition
+    artifacts:
+      desc: "An optional list of named artifact definitions for the Node Template.
+"
+      required: no
+      type: map
+      mapping:
+        =:
+          *artifact_definition
+    node_filter:
+      desc: "The optional filter definition that TOSCA orchestrators would use to select the correct target node. This keyname is only valid if the directive has the value of 'selectable' set."
+      required: no
+      <<: *node_filter_definition 
+    copy:
+      desc: "The optional (symbolic) name of another node template to copy into (all keynames and values) and use as a basis for this node template."
+      required: no
+      type: str
+
+# see section 3.7.4
+_relationship_template_definition: &relationship_template_definition
+  type: map
+  name: relationship_template_definition
+  mapping:
+    "type":
+      desc: "The required name of the Relationship Type the Relationship Template is based upon"
+      required: yes
+      type: str
+    description:
+      desc: "An optional description for the Relationship Template"
+      required: no
+      type: str
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "An optional list of property assignments for the Relationship Template."
+      required: no
+      name: properties_assignment_validation
+      type: map
+      mapping:
+        =:
+          type: any
+#scalar
+          desc: "an expression providing a property value"
+    attributes:
+      desc: "An optional list of attribute value assignments for the Relationship Template"
+      required: no
+      name: attributes_assignment_validation
+      type: map
+      mapping:
+        =: 
+          type: scalar
+          desc: "an expression providing an attribute value"
+    interfaces:
+      desc: "An optional list of named interface definitions for the Relationship Template ('augmentation' is allowed here)"
+      required: no
+      type: map
+      mapping:
+        =:
+          *template_interface_definition
+    copy:
+      desc: "The optional (symbolic) name of another relationship template to copy into (all keynames and values) and use as a basis for this relationship template."
+      required: no
+      type: str
+
+
+# see section 3.7.5
+_group_definition: &group_definition
+  type: map
+  name: group_definition
+  mapping:
+    "type":
+      desc: "The required name of the group type the group definition is based upon"
+      required: yes
+      type: str
+    description:
+      desc: "The optional description for the group definition"
+      required: no
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: " represents the optional list of property assignments for the group definition that provide values for properties defined in its declared Group Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          type: any
+          name: property_assignment
+    members:
+      desc: "contains the required list of one or more node template names (within the same topology template) that are members of this logical group"
+      required: yes
+      type: seq
+      sequence:
+        - type: str
+    interfaces:
+      desc: "represents the optional list of interface definitions for the group definition that augment those provided by its declared Group Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          *template_interface_definition
+
+# see section 3.7.6
+_policy_template_definition: &policy_template_definition
+  type: map
+  name: policy_definition
+  mapping:
+    "type":
+      desc: "The required name of the policy type the policy definition is based upon"
+      required: yes
+      type: str
+    description:
+      desc: "The optional description for the policy definition"
+      required: no
+    metadata:
+      <<: *metadata_definition
+    properties:
+      desc: "represents the optional list of property assignments for the policy definition that provide values for properties defined in its declared Policy Type"
+      required: no
+      type: map
+      mapping:
+        =:
+          type: any
+          name: property_assignment
+    targets:
+      desc: "represents the optional list of names of node templates or groups that the policy is to applied to"
+      required: no
+      type: seq
+      sequence:
+        - type: str
+    triggers:
+      desc: "List of trigger definitions"
+      required: no
+      type: seq
+      sequence:
+        - *trigger_definition
+
+#see section 3.7.7, obviously incomplete spec
+_workflow_definition: &workflow_definition
+  type: map
+  name: workflow_definition
+  mapping:
+    description:
+      desc: "The optional description for the workflow definition"
+      required: no
+    metadata:
+      <<: *metadata_definition
+    inputs:
+      desc: "optional list of input parameter definitions"
+      required: no
+      type: map
+      mapping:
+        =:
+          *property_definition
+    preconditions:
+      desc: "List of preconditions to be validated before the workflow can be processed."
+      required: no
+      type: seq
+      sequence:
+         - *workflow_precondition_definition
+    steps:
+      desc: ""
+      required: no
+      type: map
+      mapping:
+        =:
+          *workflow_step_definition
+
+
+# see section 3.8 Topology Template definition:  defines the topology template of a cloud application.
+# described as a a reusable grammar as it can be a part of a service template definition 
+_topology_template_definition: &topology_template_definition
+  type: map
+  name: topology_template_definition
+  mapping:
+    description:
+      desc: "a description of the topology template"
+      required: no
+      type: str
+    inputs:
+      desc: "definition of input parameters for the topology template"
+      name: inputs
+      required: no
+      type: map
+      mapping:
+        =:
+          *parameter_definition
+    node_templates:
+      desc: "definition of the node templates of the topology"
+      name: node_templates
+      required: no
+      type: map
+      mapping:
+        =:
+          *node_template_definition
+    relationship_templates:
+      desc: "definition of the relationship templates of the topology"
+      required: no
+      name: relationship_templates
+      type: map
+      mapping:
+        =:
+          *relationship_template_definition
+    outputs:
+      desc: "definition of output parameters for the topology template"
+      name: outputs
+      required: no
+      type: map
+      mapping:
+        =:
+          *parameter_definition
+    groups:
+      desc: "An optional list of Group definitions whose members are node templates defined within this same Topology Template"
+      name: groups
+      required: no
+      type: map
+      mapping:
+        =:
+          *group_definition
+    policies:
+ # see 8.2.3, initially the list is not described as sequenced but then the grammar shows it as such !?
+      desc: "An optional sequenced?? list of Policy definitions for the Topology Template."
+      name: policies
+      required: no
+      type: seq
+      sequence:
+        - type: map
+          mapping:
+            =:
+              *policy_template_definition
+    workflows:
+      desc: "optional map of imperative workflow definition for the Topology Template"
+      name: workflows
+      required: no
+      type: map
+      mapping:
+        =:
+          *workflow_definition
+    substitution_mappings:
+# one possible short-coming that is visible here is that the definition of the capability
+# and requirements mappings are given in the spec only with the short/inline version of a 
+# YAML list/sequence, which cannot be enforced here .. 
+      desc: " a description of the topology template"
+      name: substitution_mappings
+      required: no
+      type: map
+      mapping:
+        node_type:
+          desc: "node type name"
+          required: yes
+          type: str
+        capabilities:
+          desc: "map_of_capability_mappings_to_expose"
+          type: map
+          mapping:
+            =:
+              type: seq
+              sequence:
+                - type: str
+        requirements:      
+          desc: "map_of_requirement_mapping_to_expose"
+          type: map
+          mapping:
+            =:
+              type: seq
+              sequence:
+                - type: str
+
+
+# see A.9 Service Template definition: A TOSCA Service Template (YAML) document contains
+# element definitions of building blocks for cloud application, or complete models of cloud applications. 
+
+type: map
+name: service_template_definition
+mapping:
+  tosca_definitions_version:
+    desc: "Required TOSCA Definitions version string"
+    required: yes
+    type: str
+    enum: [tosca_simple_yaml_1_1_x]
+
+  tosca_default_namespace:
+    desc: "Optional. default namespace (for type schema)"
+    required: no
+    type: str
+
+  metadata:
+    desc: "Optional metadata keyname: value pairs"
+    name: metadata
+    required: no
+    type: map
+    mapping:
+      template_name:
+        desc: "Optional name of this service template"
+        required: no
+        type: str
+      template_author:
+        desc: "Optional author of this service template"
+        required: no
+        type: str
+      template_version:
+        desc: "Optional version of this service template"
+        required: no
+        type: str
+      =:
+        desc: "User defined entry"
+        required: no
+        type: str
+
+#to add, the spec says: "Optional list of domain or profile specific metadata keynames"
+
+  description:
+    desc: "Optional description of the definitions inside the file"
+    required: no
+    type: str
+
+  imports:
+    desc: "ordered list of import statements for importing other definitions files"
+    name: imports
+    required: no
+    type: seq
+    sequence:
+      - type: map
+        mapping:
+          =:
+            *import_definition
+
+  dsl_definitions:
+    desc: "list of YAML alias anchors (or macros)"
+    name: dsl_definitions
+    required: no
+    type: map
+    mapping:
+      =:
+        desc: "some piece of valid yaml that makes the anchor/alias definition" 
+        type: any
+        required: no
+
+  repositories:
+    desc: "list of external repository definitions which host TOSCA artifacts"
+    name: repositories
+    required: no
+    type: map
+    mapping:
+      =:
+        *repository_definition
+
+  data_types:
+    desc: "list of TOSCA datatype definitions"
+    name: data_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *data_type_definition
+
+  node_types:
+    desc: "list of node type definitions"
+    name: node_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *node_type_definition
+
+  capability_types:
+    desc: "list of capability type definitions"
+    name: capability_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *capability_type_definition
+
+  relationship_types:
+    desc: "list of relationship type definitions"
+    name: relationship_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *relationship_type_definition
+
+  artifact_types:
+    desc: "list of artifact type definitions"
+    name: artifact_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *artifact_type_definition
+
+  interface_types:
+    desc: "list of interface type definitions"
+    name: interface_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *interface_type_definition
+
+  group_types:
+    desc: "list of group type definitions"
+    name: group_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *group_type_definition
+
+  policy_types:
+    desc: "list of policy type definitions"
+    name: policy_types
+    required: no
+    type: map
+    mapping:
+      =:
+        *policy_type_definition
+
+  topology_template:
+    desc: "topology template definition of the cloud application or service"
+    required: no
+    <<: *topology_template_definition

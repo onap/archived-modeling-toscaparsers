@@ -1,0 +1,26 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+
+metadata:
+  outcome: "success"
+ 
+data_types:
+  org.onap.tosca.checker.SomeDataType:
+    derived_from: tosca.datatypes.Root
+    properties:
+      firstName:
+        type: string
+        required: true
+      lastName:
+        type: string
+        required: true
+      streetNo:
+        type: integer
+        required: true
+      streetName:
+        type: string
+        required: true
+      state:
+        type: string
+        constraints:
+          - valid_values: [AK,AL,AR,AZ,CA,CO,CT,DE,FL,GA,HI,IA,ID,IL,IN,KS,KY,LA,MA,MD,ME,MI,MN,MO,MS,MT,NC,ND,NE,NH,NJ,NM,NV,NY,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VA,VT,WA,WI,WV,WY]
+
