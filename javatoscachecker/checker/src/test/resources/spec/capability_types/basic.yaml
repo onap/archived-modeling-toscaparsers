@@ -1,0 +1,11 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+description: basic capability type
+
+metadata:
+  outcome: "success"
+ 
+capability_types:
+  org.onap.tosca.checker.capability.ElectricalSupply:
+    description: expresses the capability of a given environment ot host electric appliances
+    version: "1.0"
+

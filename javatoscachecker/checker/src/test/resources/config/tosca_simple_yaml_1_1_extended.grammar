@@ -1,3 +1,9 @@
+#
+# This is an example of an extension added to the standard 1.1 grammar
+# We add the keyword annotations (as a list) to node templates (as an example).
+# look in the node_template_definition rule
+#
+
 _status_values: &status_values  
   enum:
     - supported
@@ -643,9 +649,10 @@ _workflow_step_definition: &workflow_step_definition
       type: str
     filter:
       desc: "Filter is a map of attribute name, list of constraint clause that allows to provide a filtering logic"
-      type: seq
-      sequence:
-        - *constraints_sequence
+      type: map
+      mapping:
+        =:
+          *constraints_sequence
     activities:
       desc: "The list of sequential activities to be performed in this step"
       type: seq
@@ -1179,6 +1186,12 @@ _node_template_definition: &node_template_definition
       type: seq
       sequence:
         - type: str
+    annotations:
+      desc: "Sample extension"
+      required: no
+      type: seq
+      sequence:
+        - type: str
     properties:
 #custom check needs to be added: the value or expression providing the property value
 #needs to be compatible with the property definition
@@ -1497,7 +1510,7 @@ mapping:
     desc: "Required TOSCA Definitions version string"
     required: yes
     type: str
-    enum: [tosca_simple_yaml_1_1, tosca_simple_yaml_1_1_0]
+    enum: [tosca_simple_yaml_1_1_x]
 
   tosca_default_namespace:
     desc: "Optional. default namespace (for type schema)"

@@ -1,0 +1,24 @@
+tosca_definitions_version: tosca_simple_yaml_1_1
+description: test invalid property value assignment (numberOfCycles expects an integer)
+
+metadata:
+  outcome: "fail"
+ 
+imports:
+  - appliances: spec/node_types/node_type_with_hierarchy.yaml
+
+topology_template:
+
+  node_templates:
+    dishwasher:
+      type: org.onap.tosca.checker.Dishwasher
+      properties:
+        brand: Samsung
+        color: white
+        warrantyDuration: 1 year
+        price: 550
+        numberOfCycles: unknown
+        rackMaterial: stainless
+        energyStar: false
+
+     

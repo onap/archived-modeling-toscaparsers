@@ -1,0 +1,45 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  outcome: "fail"
+
+imports:
+  - examples: tosca/tosca-examples-types.yaml
+
+topology_template:
+  node_templates:
+    my_server:
+      type: tosca.nodes.Compute
+    db:
+      type: tosca.nodes.DBMS.MySQL
+      requirements:
+        - host: my_server
+      interfaces:
+        Standard:
+          stop: stop.sh
+
+  workflows:
+    backup:
+      description: Performs a snapshot of the MySQL data.
+      preconditions:
+        - target: my_server
+          condition:
+            - assert:
+              - state: [{equal: available}]
+        - target: my_server
+          condition:
+            - assert:
+              - state: [{valid_values: [started, available]}]
+              - my_attribute: [{equal: ready }]
+      steps:
+        backup_step:
+          target: db
+          filter: # filter is a list of clauses. Matching between clauses is and.
+            - or: # only one of sub-clauses must be true.
+              - assert:
+                - foo: [{equals: true}]
+              - assert:
+                - bar: [{greater_than: 2}, {less_than: 20}]
+          activities:
+            - call_operation: tosca.interfaces.node.lifecycle.Standard.stop
+ 
