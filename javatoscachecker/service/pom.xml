@@ -28,11 +28,24 @@
   <properties>
     <java.version>1.8</java.version>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss a</maven.build.timestamp.format>
+		<docker.push.registry>${onap.nexus.dockerregistry.daily}</docker.push.registry>
   </properties>
 
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.4.2</version>
+				<configuration>
+					<environmentVariables>
+						<DOCKER_HOST>tcp://127.0.0.1:2375</DOCKER_HOST>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
@@ -112,6 +125,110 @@
 						<goals>
 							<goal>repackage</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<configuration>
+					<imageName>onap/modeling/javatoscachecker</imageName>
+					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+					<!-- <serverId>docker-daily</serverId> -->
+					<serverId>ecomp-snapshots</serverId>
+				<!--
+					<imageTags>
+						<imageTag>latest</imageTag>
+						<imageTag>${project.docker.latesttagtimestamp.version}</imageTag>
+						<imageTag>${project.docker.latesttag.version}</imageTag>
+					</imageTags>
+					<forceTags>true</forceTags>
+				-->
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.basedir}</directory>
+							<include>application.properties</include>
+						</resource>
+					</resources>
+				</configuration>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>tag-image-latest-timestamp</id>
+						<phase>package</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>onap/modeling/javatoscachecker</image>
+							<newName>${docker.push.registry}/onap/modeling/javatoscachecker:${project.docker.latesttagtimestamp.version}</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image-latest-timestamp</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>${docker.push.registry}/onap/modeling/javatoscachecker:${project.docker.latesttagtimestamp.version}</imageName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>tag-image-latest</id>
+						<phase>package</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+             <image>onap/modeling/javatoscachecker</image>
+             <newName>${docker.push.registry}/onap/modeling/javatoscachecker:${project.docker.latesttag.version}</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image-latest</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>${docker.push.registry}/onap/modeling/javatoscachecker:${project.docker.latesttag.version}</imageName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>tag-image</id>
+						<phase>package</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>onap/modeling/javatoscachecker</image>
+							<newName>${docker.push.registry}/onap/modeling/javatoscachecker:latest</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>${docker.push.registry}/onap/modeling/javatoscachecker:latest</imageName>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
