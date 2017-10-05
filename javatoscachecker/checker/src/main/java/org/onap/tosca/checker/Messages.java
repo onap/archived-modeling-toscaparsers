@@ -13,6 +13,7 @@
 package org.onap.tosca.checker;
 
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 
@@ -28,9 +29,14 @@ public class Messages {
 			this.messages = ResourceBundle.getBundle("org/onap/tosca/checker/messages");
 		}
 		catch (MissingResourceException mrx) {
-			throw new RuntimeException("", mrx);
+			//default
+			try {
+				this.messages = ResourceBundle.getBundle("org/onap/tosca/checker/messages", new Locale("en", "US"));
+			}
+			catch (MissingResourceException mrxx) {
+				throw new RuntimeException("Faile to load resources for locale or default resources", mrx);
+			}
 		}
-
 		//check that the Message enum is in sync with the resource bundle
 	}
 
@@ -52,3 +58,4 @@ public class Messages {
 		INCOMPATIBLE_REQUIREMENT_TARGET
 	}
 }
+
