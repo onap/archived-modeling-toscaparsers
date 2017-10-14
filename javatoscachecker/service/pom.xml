@@ -140,7 +140,11 @@
 					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
 					<!-- <serverId>docker-daily</serverId> -->
 					<!-- <serverId>ecomp-snapshots</serverId> -->
+<<<<<<< HEAD
 
+=======
+					<serverId>docker-hub</serverId>
+>>>>>>> 217d512... Add Docker build plugin and support
           <noCache>true</noCache>
           <imageTags>
             <imageTag>latest</imageTag>
