@@ -140,7 +140,7 @@
 					<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
 					<!-- <serverId>docker-daily</serverId> -->
 					<!-- <serverId>ecomp-snapshots</serverId> -->
-
+					<serverId>docker-hub</serverId>
           <noCache>true</noCache>
           <imageTags>
             <imageTag>latest</imageTag>
