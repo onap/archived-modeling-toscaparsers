@@ -31,6 +31,9 @@
 		<docker.push.registry>${onap.nexus.dockerregistry.daily}</docker.push.registry>
     <docker.tag.version>${project.version}</docker.tag.version>
     <docker.tag.timestamp>${maven.build.timestamp}</docker.tag.timestamp>
+		<skip.docker.build>true</skip.docker.build>
+		<skip.docker.tag>true</skip.docker.tag>
+		<skip.docker.push>true</skip.docker.push>
   </properties>
 
 	<build>
@@ -167,6 +170,9 @@
             <goals>
               <goal>build</goal>
             </goals>
+						<configuration>
+							<skipDockerBuild>${skip.docker.build}</skipDockerBuild>
+						</configuration>
           </execution>
           <execution>
             <id>tag-image-latest-timestamp</id>
@@ -177,6 +183,7 @@
             <configuration>
               <image>onap/modeling/javatoscachecker:${docker.tag.version}-${docker.tag.timestamp}</image>
               <newName>${docker.push.registry}/onap/modeling/javatoscachecker:${docker.tag.version}-${docker.tag.timestamp}</newName>
+							<skipDockerTag>${skip.docker.tag}</skipDockerTag>
             </configuration>
           </execution>
           <execution>
@@ -187,6 +194,7 @@
             </goals>
             <configuration>
               <imageName>${docker.push.registry}/onap/modeling/javatoscachecker:${docker.tag.version}-${docker.tag.timestamp}</imageName>
+							<skipDockerPush>${skip.docker.push}</skipDockerPush>
             </configuration>
           </execution>
           <execution>
@@ -198,6 +206,7 @@
             <configuration>
               <image>onap/modeling/javatoscachecker:latest</image>
               <newName>${docker.push.registry}/onap/modeling/javatoscachecker:latest</newName>
+							<skipDockerTag>${skip.docker.tag}</skipDockerTag>
             </configuration>
           </execution>
           <execution>
@@ -208,6 +217,7 @@
             </goals>
             <configuration>
               <imageName>${docker.push.registry}/onap/modeling/javatoscachecker:latest</imageName>
+							<skipDockerPush>${skip.docker.push}</skipDockerPush>
             </configuration>
           </execution>
         </executions>
@@ -278,6 +288,17 @@
  	  	<version>1.0.0-SNAPSHOT</version>
  		</dependency>
  	</dependencies>
+	
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <properties>
+        <skip.docker.build>false</skip.docker.build>
+        <skip.docker.tag>false</skip.docker.tag>
+        <skip.docker.push>false</skip.docker.push>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>
 
