@@ -4,7 +4,7 @@
 .. http://creativecommons.org/licenses/by/4.0
 
 **************************
-OPNFV Parser Release Notes
+NFV Parser Release Notes
 **************************
 
 .. toctree::

@@ -4,7 +4,7 @@
 .. http://creativecommons.org/licenses/by/4.0
 
 ***************************************
-OPNFV Parser Installation Instruction
+NFV Parser Installation Instruction
 ***************************************
 
 .. toctree::

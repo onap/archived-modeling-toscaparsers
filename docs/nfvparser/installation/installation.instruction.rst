@@ -2,33 +2,37 @@
 .. http://creativecommons.org/licenses/by/4.0
 
 
-Parser nfv toscaparser Installation
+NFV Parser Installation
 ===================================
 
-Nfv tocsa provide two method for installation, please follow the below installation steps to install toscaparser.
+NFV Parer provide two ways for installation, please follow the below installation steps to install nfv parser.
 
 By code source
 ^^^^^^^^^^^^^^
 
 Step 1: Clone the parser project.
 
-Step 2: Install the tosca-parser sub project.
+.. code-block:: bash
+
+    git clone http://gerrit.onap.org/r/modeling/toscaparsers
+
+Step 2: Install the nfvparser sub project.
 
 .. code-block:: bash
 
     # uninstall pre-installed tosca-parser
     pip uninstall -y tosca-parser
 
-    # change directory to tosca-parser
-    cd parser/tosca2heat/tosca-parser
+    # change directory to nfvparser
+    cd ./toscaparsers/nfvparser
 
     # install requirements
     pip install -r requirements.txt
 
-    # install tosca-parser
+    # install nfv-toscaparser
     python setup.py install
 
-By pacage
+By package
 ^^^^^^^^^^
 Step 1: Make user pip has been already installed.
 
@@ -40,11 +44,13 @@ Step 1: Make user pip has been already installed.
     # for centos,rhel or fedora
     yum install python-pip
 
-Step 2: install nfv-tsoca using pip
+Step 2: install nfv-toscaparser using pip
 
 .. code-block:: bash
 
-    pip install nfv-tosca
+    pip install nfv-toscaparser
+    or
+    pip install --pre nfv-toscaparser
 
 
 **Notes**: It must uninstall pre-installed tosca-parser before install the component, which is sure to use the
