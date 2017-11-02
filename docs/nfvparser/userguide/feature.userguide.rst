@@ -4,7 +4,7 @@
 
 
 
-nfv parser Execution
+NFV Parser Execution
 =====================
 
 Following is shown how to use nfv-toscaparser:
