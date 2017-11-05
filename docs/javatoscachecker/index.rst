@@ -6,3 +6,6 @@ The documentation for javatoscachecker
 
 .. toctree::
    :maxdepth: 1
+
+   
+   checker
