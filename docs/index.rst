@@ -1,6 +1,6 @@
 .. This work is licensed under a Creative Commons Attribution 4.0 International License.
 
-The documentation for tosca parsers
+The documentation for TOSCA parsers
 ===================================
 
 
@@ -9,3 +9,5 @@ The documentation for tosca parsers
 
    javatoscachecker/index
    nfvparser/index
+
+   offeredapis
