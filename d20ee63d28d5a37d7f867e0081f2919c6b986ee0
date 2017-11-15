@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a4e6583_ec1ddf74",
+        "filename": "docs/javatoscachecker/release-notes/release-notes.rst",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 219
+      },
+      "writtenOn": "2017-11-15T01:46:07Z",
+      "side": 1,
+      "message": "Release date is Nov 16. Please update",
+      "range": {
+        "startLine": 14,
+        "startChar": 23,
+        "endLine": 14,
+        "endChar": 25
+      },
+      "revId": "d20ee63d28d5a37d7f867e0081f2919c6b986ee0",
+      "serverId": "14b4e41f-c4e3-4fb9-9955-6a9b5656895a",
+      "unresolved": false
+    }
+  ]
+}
