@@ -3,31 +3,33 @@
 .. Copyright 2017 AT&T Intellectual Property.  All rights reserved.
 
 
-Java TOSCA Checker Release Notes
-========================
-
+Modeling Java TOSCA Checker Release Notes
+=========================================
 
 Version: 1.0.0
 --------------
-
 
 :Release Date: 2017-11-16
 
 
 
 **New Features**
-	Initial release of javatoscachcker for Open Network Automation Platform (ONAP)
+
+Initial release of javatoscachcker for Open Network Automation Platform (ONAP)
 
 
 **Bug Fixes**
-	- `MODELING-16 <https://jira.onap.org/browse/MODELING-16>`_ Remove duplicate eror messages in data evaluation
-	- `MODELING-26 <https://jira.onap.org/browse/MODELING-26>`_ Add unit tests.
+
+- `MODELING-16 <https://jira.onap.org/browse/MODELING-16>`_ Remove duplicate eror messages in data evaluation
+- `MODELING-26 <https://jira.onap.org/browse/MODELING-26>`_ Add unit tests
 
 **Known Issues**
-	None
+
+None
 
 **Upgrade Notes**
-   None
+
+None
 
 **Other**
 

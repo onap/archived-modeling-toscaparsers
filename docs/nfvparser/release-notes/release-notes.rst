@@ -3,25 +3,27 @@
 .. Copyright 2017 AT&T Intellectual Property.  All rights reserved.
 
 
-NFV Parser Release Notes
-========================
+Modeling NFV Parser Release Notes
+=================================
 
 
-Version: x.y.z
+Version: 1.0.0
 --------------
 
 
-:Release Date: 2017-10-15
+:Release Date: 2017-10-16
 
 
 
 **New Features**
-	Initial release of nfvparser for Open Network Automation Platform (ONAP)
+
+Initial release of nfvparser for Open Network Automation Platform (ONAP)
 
 
 **Bug Fixes**
-	- `MODELING-23 <https://jira.onap.org/browse/MODELING-23>`_ Sync code for nfv-toscaprser.
-	- `MODELING-24 <https://jira.onap.org/browse/MODELING-24>`_ Add coverage test item for tox.
+
+- `MODELING-23 <https://jira.onap.org/browse/MODELING-23>`_ Sync code for nfv-toscaprser.
+- `MODELING-24 <https://jira.onap.org/browse/MODELING-24>`_ Add coverage test item for tox.
 
 **Known Issues**
 	None
