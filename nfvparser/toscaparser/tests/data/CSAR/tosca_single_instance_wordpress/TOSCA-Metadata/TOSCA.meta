@@ -1,5 +1,5 @@
 TOSCA-Meta-File-Version: 1.0
 CSAR-Version: 1.1
-Created-By: OASIS TOSCA TC
+Created-By: OASIS TOSCA TC, Licensed under the Apache License, Version 2.0 (the "License")
 Entry-Definitions: Definitions/tosca_single_instance_wordpress.yaml
 Content-Type: application/vnd.oasis.tosca.definitions.yaml

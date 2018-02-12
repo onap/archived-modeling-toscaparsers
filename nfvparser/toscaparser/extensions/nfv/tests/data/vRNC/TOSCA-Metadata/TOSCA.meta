@@ -1,4 +1,4 @@
 TOSCA-Meta-File-Version: 1.0
 CSAR-Version: 1.1
-Created-By: shang.xiaodog@zte.com.cn
+Created-By: shang.xiaodog@zte.com.cn, Licensed under the Apache License, Version 2.0 (the "License")
 Entry-Definitions: Definitions/vRNC.yaml
