@@ -1,0 +1,9 @@
+Verified+1: ONAP Jobbuilder <onap-jobbuilder@jenkins.onap.org>
+Code-Review+1: Gildas Lanilis <gildas.lanilis@huawei.com>
+Code-Review+2: Hui Deng <denghui12@huawei.com>
+Verified+1: Hui Deng <denghui12@huawei.com>
+Submitted-by: Hui Deng <denghui12@huawei.com>
+Submitted-at: Sat, 17 Feb 2018 14:51:50 +0000
+Reviewed-on: https://gerrit.onap.org/r/31981
+Project: modeling/toscaparsers
+Branch: refs/heads/master
