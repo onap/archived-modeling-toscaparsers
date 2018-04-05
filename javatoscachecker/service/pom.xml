@@ -27,7 +27,7 @@
 
   <properties>
     <java.version>1.8</java.version>
-    <maven.build.timestamp.format>yyyy.MM.dd'T'hh.mm.ss'Z'</maven.build.timestamp.format>
+    <maven.build.timestamp.format>yyyyMMdd'T'HHmmss'Z'</maven.build.timestamp.format>
 		<docker.push.registry>${onap.nexus.dockerregistry.daily}</docker.push.registry>
     <docker.tag.version>${project.version}</docker.tag.version>
     <docker.tag.timestamp>${maven.build.timestamp}</docker.tag.timestamp>
