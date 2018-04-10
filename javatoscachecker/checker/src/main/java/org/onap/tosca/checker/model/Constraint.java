@@ -17,7 +17,11 @@ package org.onap.tosca.checker.model;
  */
 public interface Constraint extends TOSCAObject<Constraint> {
 
-	public Constraint.Type name();
+	public String name();
+
+	public default Constraint.Type type() {
+		return Type.valueOf(Type.class, name());
+	}
 
 	/* this is a one entry map so here we pick the single 
 	 */

@@ -71,14 +71,29 @@ public class ModelTest {
 
 		assertTrue(template.data_types() != null);
 
-		for (Map.Entry<String, DataType> type: template.data_types().entrySet()) {
-      assertTrue(type.getKey().startsWith("data_type_"));
+		for (DataType type: template.data_types().values()) {
+      assertTrue(type.name().startsWith("data_type_"));
+      assertTrue(type.description().startsWith("test data type"));
+			assertTrue(type.version().equals("1.0"));
 
-      Properties props = type.getValue().properties();
+      Properties props = type.properties();
 			assertTrue(props != null);
 
-			for (Map.Entry<String, Property> prop: props.entrySet()) {
-      	assertTrue(prop.getKey().startsWith("data_field_"));
+			for (Property prop: props.values()) {
+      	assertTrue("property name prefix " + prop.name(), prop.name().startsWith("data_field_"));
+				assertTrue("property description prefix " + prop.description(), prop.description().startsWith("test data field"));
+				assertTrue(prop.required());
+
+				String propType = prop.type();
+      	assertTrue(propType != null && (propType.equals("string") || propType.equals("integer")));
+			
+				Constraints constraints = prop.constraints();
+				if (constraints != null) {
+					if ("integer".equals(propType))
+						assertTrue("integer constraints", constraints.get(0).name().equals("valid_values"));
+					if ("string".equals(propType))
+						assertTrue("string constraints", constraints.get(0).name().equals("max_length"));
+				}
 			}
 		}
 	}
@@ -104,13 +119,13 @@ public class ModelTest {
 		
 		assertTrue(template.interface_types() != null);
 		for (Map.Entry<String, InterfaceType> type: template.interface_types().entrySet()) {
-      assertTrue(type.getKey().matches("interface_type_[0-9]"));
+      assertTrue(type.getKey(), type.getKey().matches("interface_type_[0-9]"));
 
 			Operations ops = type.getValue().operations();
-			assertTrue(ops != null);
-
-			for (Map.Entry<String, Operation> op: ops.entrySet()) {
-      	assertTrue(op.getKey().matches("interface_type_[0-9]_op_[0-9]"));
+			if(ops != null) {
+				for (Map.Entry<String, Operation> op: ops.entrySet()) {
+  	    	assertTrue(op.getKey().matches("interface_type_[0-9]_op_[0-9]"));
+				}
 			}
 		}
   }
@@ -120,13 +135,13 @@ public class ModelTest {
 		
 		assertTrue(template.relationship_types() != null);
 		for (Map.Entry<String, RelationshipType> type: template.relationship_types().entrySet()) {
-      assertTrue(type.getKey().matches("relationship_type_[0-9]"));
+      assertTrue(type.getKey().matches("relationship_type_[0-9][0-9]"));
 
 			TypeInterfaces infs = type.getValue().interfaces();
 			assertTrue(infs != null);
 
 			for (Map.Entry<String, TypeInterface> inf: infs.entrySet()) {
-      	assertTrue(inf.getKey().matches("relationship_type_[0-9]_interface_[0-9]"));
+      	assertTrue(inf.getKey().matches("relationship_type_[0-9]+_interface_[0-9]+"));
 			}
 		}
 	}
@@ -135,15 +150,42 @@ public class ModelTest {
 	public void testServiceTemplateNodeTypes() {
 		
     assertTrue(template.node_types() != null);
-		for (Map.Entry<String, NodeType> type: template.node_types().entrySet()) {
-      assertTrue(type.getKey().matches("node_type_[0-9]"));
+		for (NodeType nodeType: template.node_types().values()) {
+      assertTrue(nodeType.name().matches("node_type_[0-9]"));
 
-			Capabilities caps = type.getValue().capabilities();
+			Capabilities caps = nodeType.capabilities();
 			assertTrue(caps != null);
 			
-			for (Map.Entry<String, Capability> cap: caps.entrySet()) {
-      	assertTrue(cap.getKey().matches("node_type_[0-9]_capability_[0-9]"));
+			for (Capability cap: caps.values()) {
+      	assertTrue(cap.name().matches("node_type_[0-9]_capability_[0-9]"));
 			}
+
+			Requirements reqs = nodeType.requirements();
+			if (reqs != null) {
+				for (Requirement req: reqs) {
+					assertTrue(req.name().startsWith(nodeType.name() + "_requirement"));
+					assertTrue(req.capability() != null);
+					assertTrue(req.node() != null);
+					assertTrue(req.relationship() != null);
+				}
+			}
+
+			Artifacts arts = nodeType.artifacts();
+			if (arts != null) {
+				for (Artifact art: arts.values()) {
+					assertTrue(art.name().startsWith(nodeType.name() + "_artifact"));
+					assertTrue(art.type().startsWith("artifact_type"));
+				}
+			}
+
+			TypeInterfaces itfs = nodeType.interfaces();
+			if (itfs != null) {
+				for (TypeInterface itf: itfs.values()) {
+					assertTrue(itf.name().startsWith(nodeType.name() + "_interface"));
+					assertTrue(itf.type().startsWith("interface_type"));
+				}
+			}
+
 		}
 	}
 	
@@ -164,14 +206,19 @@ public class ModelTest {
 
     assertTrue(template.topology_template().node_templates() != null);
 
-		for (Map.Entry<String, NodeTemplate> node: template.topology_template().node_templates().entrySet()) {
-      assertTrue(node.getKey().matches("node_[0-9]"));
+		for (NodeTemplate node: template.topology_template().node_templates().values()) {
+      assertTrue(node.name().matches("node_[0-9]"));
 
-			PropertiesAssignments props = node.getValue().properties();
+			PropertiesAssignments props = node.properties();
 			assertTrue(props != null);
 
 			for (Map.Entry<String, Object> prop: props.entrySet()) {
       	assertTrue(prop.getKey().matches("node_type_[0-9]_property_[0-9]"));
+			}
+
+			NodeType nodeType = template.node_types().get(node.type());
+			if (nodeType.capabilities() != null) {
+				assertTrue(node.capabilities() != null);
 			}
 		}
 	}
