@@ -17,17 +17,39 @@ data_types:
 
   data_type_1:
     derived_from: tosca.datatypes.Root
+    description: test data type 1 
+    version: "1.0"
     properties:
       data_field_11:
         type: string
+        required: true
+        description: test data field 11 
       data_field_12:
         type: integer
+        required: true
+        description: test data field 12 
+        constraints:
+         - valid_values: [ 1, 12,24 ]
 
   data_type_2:
     derived_from: data_type_1
+    description: test data type 2 
+    version: "1.0"
     properties:
       data_field_21:
         type: string
+        required: true
+        description: test data field 21 
+        constraints:
+         - max_length: 128
+
+artifact_types:
+
+  artifact_type_1:
+    derived_from: tosca.artifacts.File
+    description: Some test bytes
+    mime_type: application/octet-stream
+    file_ext: [ tst ]
 
 capability_types:
 
@@ -55,7 +77,8 @@ node_types:
     requirements:
       - node_type_1_requirement_2:
           capability: capability_type_2
-#         relationship:  
+          node: node_type_2
+          relationship: relationship_type_12
 
   node_type_2:
     properties:
@@ -64,6 +87,12 @@ node_types:
     capabilities:
       node_type_2_capability_2:
         type: capability_type_2
+    artifacts:
+      node_type_2_artifact_1:
+        type: artifact_type_1
+    interfaces:
+      node_type_2_interface_1:
+        type: interface_type_1
 
 interface_types:
 
@@ -75,15 +104,18 @@ interface_types:
 #        type: string
     interface_type_1_op_1:
       description: test interface operation
+  
+  interface_type_2:
+    derived_from: tosca.interfaces.node.lifecycle.Standard
 
 relationship_types:
 
-  relationship_type_1:
+  relationship_type_12:
     derived_from: tosca.relationships.ConnectsTo
     description: test relationship type
     interfaces:
-      relationship_type_1_interface_1:
-        type: interface_type_1
+      relationship_type_12_interface_1:
+        type: interface_type_2
 
 topology_template:
 
@@ -93,11 +125,15 @@ topology_template:
       type: node_type_1
       properties:
         node_type_1_property_1: { data_field_11: "11", data_field_12: 12 }
+      capabilities:
+        node_type_1_capability_1:
+          properties:
+            capability_type_1_property_1: value_1
       requirements:
         - node_type_1_requirement_2:
             node_filter:
               capabilities:
-                - two:
+                - node_type_2_capability_2:
                     properties:
                       - capability_type_2_property_1: { equal: "value2" }
 
@@ -113,7 +149,7 @@ topology_template:
   relationship_templates:
 
     relationship_1:
-      type: relationship_type_1
+      type: relationship_type_12
 #      interfaces:
 #        relationship_type_1_interface_1:
 

@@ -20,6 +20,10 @@ import java.util.List;
 public interface Capability extends TOSCAObject<Capability> {
 
 	/**
+	 */
+	public String name();
+
+	/**
 	 * The required name of the Capability Type the capability definition is based upon.
    */
 	public String type();

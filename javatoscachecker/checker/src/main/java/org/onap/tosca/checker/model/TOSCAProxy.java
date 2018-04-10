@@ -95,9 +95,12 @@ public class TOSCAProxy
  	 * This is targeted at lists of one entry maps seen in in the TOSCA spec 
    */
 	public static <T extends TOSCASeq> T buildSeq(final List<Map> theInfo, Class<T> theType) {
-		theInfo.replaceAll((value) -> { Map.Entry<String,Map> entry = (Map.Entry<String,Map>)
+		theInfo.replaceAll((value) -> {	Map.Entry<String,?> entry = (Map.Entry<String,?>)
 																																			value.entrySet().iterator().next();
-																		return buildObject(entry.getKey(), entry.getValue(), typeArgument(theType)); 
+																		
+																		return entry.getValue() instanceof Map ?
+																							buildObject(entry.getKey(), (Map)entry.getValue(), typeArgument(theType)) :
+																							buildObject(entry.getKey(), Collections.singletonMap("value", entry.getValue()), typeArgument(theType));
 																	});
 		return (T)java.lang.reflect.Proxy.newProxyInstance(
 							TOSCAProxy.class.getClassLoader(),
