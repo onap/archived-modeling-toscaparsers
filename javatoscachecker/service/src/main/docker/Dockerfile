@@ -14,7 +14,7 @@ FROM openjdk:8
 
 MAINTAINER "sj2381@att.com"
 
-ADD Service-1.0.0-SNAPSHOT.jar /opt/modeling/Service-1.0.0-SNAPSHOT.jar
+ADD Service-1.2.0-SNAPSHOT.jar /opt/modeling/Service-1.2.0-SNAPSHOT.jar
 ADD application.properties /opt/modeling/application.properties
 VOLUME /etc
 ADD startService.sh /opt/modeling/startService.sh

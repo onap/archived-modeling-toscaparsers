@@ -22,5 +22,5 @@
 # ECOMP is a trademark and service mark of AT&T Intellectual Property.
 ###
 
-java -Xms1024m -Xmx1024m -jar ./Service-1.0.0-SNAPSHOT.jar
+java -Xms1024m -Xmx1024m -jar ./Service-1.2.0-SNAPSHOT.jar
 
