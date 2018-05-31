@@ -6,6 +6,38 @@
 Modeling Java TOSCA Checker Release Notes
 =========================================
 
+Version: 1.2.1
+--------------
+
+
+:Release Date: 2018-06-07
+
+
+
+**New Features**
+
+
+
+**Bug Fixes**
+
+**Security Notes**
+
+MODELLING code has been formally scanned during build time using NexusIQ and no Critical vulnerability was found.
+
+Quick Links:
+ 	- `MODELLING project page <https://wiki.onap.org/display/DW/Modeling+Project>`_
+ 	
+ 	- `Passing Badge information for MODELLING <https://bestpractices.coreinfrastructure.org/en/projects/1774>`_
+ 	
+**Known Issues**
+   None
+
+**Upgrade Notes**
+   None
+
+**Other**
+
+
 Version: 1.0.0
 --------------
 
