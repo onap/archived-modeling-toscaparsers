@@ -7,4 +7,3 @@ TOSCA parsers APIs
    :maxdepth: 1
 
    javatoscachecker/offeredapis
-   nfvparser/offeredapis
