@@ -241,7 +241,7 @@ public class Workflows {
 		}
 
 		String targetRelationship = (String)theDef.get("target_relationship");
-		if (targetRelationship != null) {
+		if (targetRelationship != null && targetConstruct!=null ) {
 			if (targetConstruct.equals(Construct.Node)) {
 				//'The optional name of a requirement of the target in case the step refers to a relationship rather than a node or group'
 				if (null == theContext.catalog().getRequirementDefinition(Construct.Node, 
