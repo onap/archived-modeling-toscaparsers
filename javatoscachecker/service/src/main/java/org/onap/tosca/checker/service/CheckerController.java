@@ -38,6 +38,11 @@ import org.springframework.context.ApplicationContextAware;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.Api;
+
 import org.onap.tosca.checker.Checker;
 import org.onap.tosca.checker.CheckerException;
 import org.onap.tosca.checker.Report;
@@ -46,8 +51,7 @@ import org.onap.tosca.checker.Target;
 import org.onap.tosca.checker.TargetLocator;
 import org.onap.tosca.checker.CommonLocator;
 
-
-
+@Api(description = "Tosca document validation operations")
 @RestController
 public class CheckerController implements ApplicationContextAware {
 
@@ -65,11 +69,11 @@ public class CheckerController implements ApplicationContextAware {
 	/**
 	 * standalone checking, everything will be forgotten
 	 */
+	@ApiOperation(value = "Validate given tosca yaml document. All errors reported as part of the returned report.", response = Report.class)
 	@RequestMapping(value={"/check_template/"}, method={RequestMethod.POST}, produces={"application/json"})
 	public Report validate(@RequestBody String theTemplate,
 												 HttpServletRequest theRequest) {
 
-System.out.println("Posting unnamed template");
 		CachedTarget target = new CachedTarget("", requestURI(theRequest));
 		target.setContent(theTemplate);
 		((InCatalogLocator)this.checker.getTargetLocator()).setCatalog(null);
@@ -88,13 +92,14 @@ System.out.println("Posting unnamed template");
 	/**
 	 * checking with respect to a namespace/catalog but the outcome is forgotten (not added to the catalog)
 	 */
+	@ApiOperation(value = "Validate given tosca yaml document with repect to the information currently available in the indicated catalog. All errors reported as part of the returned report.", response = Report.class)
+	@ApiResponses(value = { @ApiResponse(code = 412, message = "No such catalog exists in the service") }) 
 	@RequestMapping(value={"/check_template/{catalog}"}, method={RequestMethod.POST}, produces={"application/json"})
 	public Report validate(@RequestBody String theTemplate,
 												 @PathVariable(value="catalog") String theCatalog,
 												 HttpServletRequest theRequest) 
 																										throws NoSuchCatalogException {
 
-System.out.println("Posting unnamed template to catalog " + theCatalog);
 		Catalog catalog = this.catalogs.getCatalog(theCatalog);
 		if (catalog == null)
 			throw new NoSuchCatalogException(theCatalog);
@@ -118,13 +123,14 @@ System.out.println("Posting unnamed template to catalog " + theCatalog);
 	/**
 	 * checking with respect to a namespace/catalog, the outcome is registered within the catalog 
 	 */	
+	@ApiOperation(value = "Validate given tosca yaml document with repect to the information currently available in the indicated catalog. Template/target tosca information set is added to the catalog and remains available under the specified name which can be used in the imports of other templetes submitted for validation. All errors reported as part of the returned report.", notes = "If a catalog with the given name does not exist one will be created", response = Report.class)
+	@ApiResponses(value = { @ApiResponse(code=412, message="Same target exists in given catalog") }) 
 	@RequestMapping(value={"/check_template/{catalog}/{name}"}, method={RequestMethod.POST}, produces={"application/json"})
 	public Report validate(@RequestBody String theTemplate,
 												 @PathVariable(value="catalog") String theCatalog,
 												 @PathVariable(value="name") String theName,
 												 HttpServletRequest theRequest)
 																								throws TargetConflictException {
-System.out.println("Posting template named " + theName + " to catalog " + theCatalog);
 		
 		Catalog catalog = this.catalogs.getCatalog(theCatalog);
 		((InCatalogLocator)this.checker.getTargetLocator()).setCatalog(catalog);
@@ -155,6 +161,8 @@ System.out.println("Posting template named " + theName + " to catalog " + theCat
 		return target.getReport();
 	}
 	
+	@ApiOperation(value = "Check the existence of a catalog with the given name.")
+	@ApiResponses(value = { @ApiResponse(code=404, message="") }) 
 	@RequestMapping(value={"/check_template/{catalog}"}, method={RequestMethod.GET})
 	public ResponseEntity<Void> validate(@PathVariable(value="catalog") String theCatalog) {
 
@@ -166,6 +174,8 @@ System.out.println("Posting template named " + theName + " to catalog " + theCat
 		return new ResponseEntity(HttpStatus.OK);
 	}
 	
+	@ApiOperation(value = "Remove the catalog with the given name and the associated tosca information set.")
+	@ApiResponses(value = { @ApiResponse(code=404, message="") }) 
 	@RequestMapping(value={"/check_template/{catalog}"}, method={RequestMethod.DELETE})
 	public ResponseEntity<Void> deleteCatalog(@PathVariable(value="catalog") String theCatalog) {
 
@@ -177,6 +187,8 @@ System.out.println("Posting template named " + theName + " to catalog " + theCat
 		return new ResponseEntity(HttpStatus.OK);
 	}
 	
+	@ApiOperation(value = "Check the existence of the specified template/target within the given catalog.")
+	@ApiResponses(value = { @ApiResponse(code=404, message="No such catalog"), @ApiResponse(code=404, message="No such template")}) 
 	@RequestMapping(value={"/check_template/{catalog}/{name}"}, method={RequestMethod.GET})
 	public ResponseEntity<String> retrieve(@PathVariable(value="catalog") String theCatalog,
 												 								 @PathVariable(value="name") String theTemplateName,
@@ -184,12 +196,12 @@ System.out.println("Posting template named " + theName + " to catalog " + theCat
 
 		Catalog cat = catalogs.getCatalog(theCatalog);
 		if (cat == null) {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
+			return new ResponseEntity("No such catalog", HttpStatus.NOT_FOUND);
 		}
 
 		Target t = cat.getTarget(requestURI(theRequest));
 		if (t == null) {
-			return new ResponseEntity(HttpStatus.NOT_FOUND);
+			return new ResponseEntity("No such template", HttpStatus.NOT_FOUND);
 		}
 
 		return new ResponseEntity("{}", HttpStatus.OK);

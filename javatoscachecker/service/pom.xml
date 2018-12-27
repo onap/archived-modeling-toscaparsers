@@ -61,7 +61,7 @@
 				</configuration>
 			</plugin>
 
-<!--
+<!-- 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -281,7 +281,12 @@
 			<artifactId>json</artifactId>
 			<version>20160212</version>
 		</dependency>
-	 	  
+		<dependency>
+    	<groupId>io.swagger</groupId>
+    	<artifactId>swagger-annotations</artifactId>
+    	<version>1.5.0</version>
+		</dependency>
+ 
 		<dependency>
 	   	<groupId>org.onap.modeling.toscaparsers</groupId>
  		  <artifactId>Checker</artifactId>
