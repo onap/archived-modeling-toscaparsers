@@ -848,49 +848,66 @@ public class PlainYamlParser implements Parser {
 
     private Object toScalar(String value) {
         Matcher m;
-        if        ((m = Util.matcher(value, "^\"(.*)\"([ \t]*#.*$)?")).find()) {
+        m = Util.matcher(value, "^\"(.*)\"([ \t]*#.*$)?");
+        if(m.find()) {
             return m.group(1);
-        } else if ((m = Util.matcher(value, "^'(.*)'([ \t]*#.*$)?")).find()) {
+        }
+
+        m = Util.matcher(value, "^'(.*)'([ \t]*#.*$)?");
+        if (m.find()) {
             return m.group(1);
-        } else if ((m = Util.matcher(value, "^(.*\\S)[ \t]*#")).find()) {
+        }
+
+        m = Util.matcher(value, "^(.*\\S)[ \t]*#");
+        if (m.find()) {
             value = m.group(1);
         }
-        //
-        if      (Util.matches(value, "^-?0x\\d+$"))       return new Integer(Integer.parseInt(value, 16));
-        else if (Util.matches(value, "^-?0\\d+$"))        return new Integer(Integer.parseInt(value, 8));
-        else if (Util.matches(value, "^-?\\d+$"))         return new Integer(Integer.parseInt(value, 10));
-        else if (Util.matches(value, "^-?\\d+\\.\\d+$"))  return new Double(Double.parseDouble(value));
-        else if (Util.matches(value, "^(true|yes|on)$"))  return Boolean.TRUE;
-        else if (Util.matches(value, "^(false|no|off)$")) return Boolean.FALSE;
-        else if (Util.matches(value, "^(null|~)$"))       return null;
-        else if (Util.matches(value, "^:(\\w+)$"))        return value;
-        else if ((m = Util.matcher(value, "^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)$")).find()) {
-            int year  = Integer.parseInt(m.group(1));
+
+        if (Util.matches(value, "^-?0x\\d+$"))
+            return Integer.valueOf(value, 16);
+        else if (Util.matches(value, "^-?0\\d+$"))
+            return Integer.valueOf(value, 8);
+        else if (Util.matches(value, "^-?\\d+$"))
+            return Integer.valueOf(value, 10);
+        else if (Util.matches(value, "^-?\\d+\\.\\d+$"))
+            return Double.valueOf(value);
+        else if (Util.matches(value, "^(true|yes|on)$"))
+            return Boolean.TRUE;
+        else if (Util.matches(value, "^(false|no|off)$"))
+            return Boolean.FALSE;
+        else if (Util.matches(value, "^(null|~)$"))
+            return null;
+        else if (Util.matches(value, "^:(\\w+)$"))
+            return value;
+
+        m = Util.matcher(value, "^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)$");
+        if (m.find()) {
+            int year = Integer.parseInt(m.group(1));
             int month = Integer.parseInt(m.group(2));
-            int day   = Integer.parseInt(m.group(3));
+            int day = Integer.parseInt(m.group(3));
             Calendar cal = Calendar.getInstance();
             cal.set(year, month, day, 0, 0, 0);
-            Date date = cal.getTime();
-            return date;
-        } else if ((m = Util.matcher(value, "^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)(?:[Tt]|[ \t]+)(\\d\\d?):(\\d\\d):(\\d\\d)(\\.\\d*)?(?:Z|[ \t]*([-+]\\d\\d?)(?::(\\d\\d))?)?$")).find()) {
-            int year    = Integer.parseInt(m.group(1));
-            int month   = Integer.parseInt(m.group(2));
-            int day     = Integer.parseInt(m.group(3));
-            int hour    = Integer.parseInt(m.group(4));
-            int min     = Integer.parseInt(m.group(5));
-            int sec     = Integer.parseInt(m.group(6));
-            //int usec    = Integer.parseInt(m.group(7));
-            //int tzone_h = Integer.parseInt(m.group(8));
-            //int tzone_m = Integer.parseInt(m.group(9));
+            return cal.getTime();
+        }
+
+        m = Util.matcher(value, "^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)(?:[Tt]|[ \t]+)(\\d\\d?):(\\d\\d):(\\d\\d)(\\.\\d*)?(?:Z|[ \t]*([-+]\\d\\d?)(?::(\\d\\d))?)?$");
+        if (m.find()) {
+            int year = Integer.parseInt(m.group(1));
+            int month = Integer.parseInt(m.group(2));
+            int day = Integer.parseInt(m.group(3));
+            int hour = Integer.parseInt(m.group(4));
+            int min = Integer.parseInt(m.group(5));
+            int sec = Integer.parseInt(m.group(6));
+            // int usec = Integer.parseInt(m.group(7));
+            // int tzone_h = Integer.parseInt(m.group(8));
+            // int tzone_m = Integer.parseInt(m.group(9));
             String timezone = "GMT" + m.group(8) + ":" + m.group(9);
             Calendar cal = Calendar.getInstance();
             cal.set(year, month, day, hour, min, sec);
             cal.setTimeZone(TimeZone.getTimeZone(timezone));
-            Date date = cal.getTime();
-            return date;
-        } else {
-            return value;
+            return cal.getTime();
         }
+        return value;
     }
 
 /*

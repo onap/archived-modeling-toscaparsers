@@ -53,8 +53,8 @@ package kwalify;
 public abstract class BaseException extends KwalifyRuntimeException implements Comparable {
 
     String _ypath;
-    Object _value;
-    Rule   _rule;
+    transient Object _value;
+    transient Rule   _rule;
     String _errorSymbol;
     int    _linenum = -1;
     

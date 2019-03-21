@@ -57,7 +57,7 @@ public class DefaultableHashMap extends HashMap implements Defaultable {
 
     private static final long serialVersionUID = -5224819562023897380L;
 
-    private Object _default = null;
+    private transient Object _default = null;
 
     public DefaultableHashMap() {
         super();
