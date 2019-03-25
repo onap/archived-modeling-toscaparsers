@@ -53,19 +53,21 @@ package kwalify;
 public class CommandOptionException extends KwalifyException {
     private static final long serialVersionUID = 6433387612335104714L;
 
-    private String _error_symbol = null;
-    private char _option;
+    private final String errorSymbol;
+    private final char option;
 
-    public CommandOptionException(String message, char option, String error_symbol) {
+    public CommandOptionException(String message, char option, String errorSymbol) {
         super(message);
-        _option = option;
-        _error_symbol = error_symbol;
+        this.option = option;
+        this.errorSymbol = errorSymbol;
     }
 
-    public String getErrorSymbol() { return _error_symbol; }
-    public void setErrorSymbol(String error_symbol) { _error_symbol = error_symbol; }
+    public String getErrorSymbol() {
+        return errorSymbol;
+    }
 
-    public char getOption() { return _option; }
-    public void setOption(char option) { _option = option; }
+    public char getOption() {
+        return option;
+    }
 
 }

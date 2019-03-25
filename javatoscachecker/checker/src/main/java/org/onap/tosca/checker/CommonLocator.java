@@ -97,7 +97,16 @@ public class CommonLocator implements TargetLocator {
 				catch (IOException iox) {
 					log.log(Level.WARNING, "The path " + theName + " is an absolute uri but it canont be opened", iox);
 					return null;
-				}
+				}finally {
+	                if (pis!= null) {
+	                    try {
+	                        pis.close();
+	                    }
+	                    catch (IOException iox) {
+	                        log.log(Level.FINER,"Error while closing input stream",iox);
+	                    }
+	                }
+	            }
 			}
 		}
 		catch(URISyntaxException urisx) {
@@ -123,6 +132,7 @@ public class CommonLocator implements TargetLocator {
 						pis.close();
 					}
 					catch (IOException iox) {
+					    log.log(Level.FINER,"Error while closing input stream",iox);
 					}
 				}
 			}
@@ -135,6 +145,7 @@ public class CommonLocator implements TargetLocator {
 				return new Target(theName, purl.toURI());
 			}
 			catch (URISyntaxException urisx) {
+			    log.log(Level.FINER,"Error while creating Target",urisx);
 			}
 		}
 

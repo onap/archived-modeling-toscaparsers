@@ -52,38 +52,47 @@ package kwalify;
  */
 public abstract class BaseException extends KwalifyRuntimeException implements Comparable {
 
-    String _ypath;
-    transient Object _value;
-    transient Rule   _rule;
-    String _errorSymbol;
-    int    _linenum = -1;
-    
+    final String ypath;
+    final transient Object value;
+    final transient Rule rule;
+    final String errorSymbol;
+    int linenum = -1;
+
     public BaseException(String message, String ypath, Object value, Rule rule, String errorSymbol) {
         super(message);
-        _ypath = ypath;
-        _value = value;
-        _rule  = rule;
-        _errorSymbol = errorSymbol;
+        this.ypath = ypath;
+        this.value = value;
+        this.rule  = rule;
+        this.errorSymbol = errorSymbol;
     }
 
-    public String getPath() { return _ypath.equals("") ? "/" : _ypath; }
-    //public void setPath(String ypath) { _ypath = ypath; }
+    public String getPath() {
+        return ypath.isEmpty() ? "/" : ypath;
+    }
 
-    public Object getValue() { return _value; }
-    //public void setValue(Object value) { _value = value; }
+    public Object getValue() {
+        return value;
+    }
 
-    public Rule getRule() { return _rule; }
-    //
-    //public void setRule(Rule rule) { _rule = rule; }
+    public Rule getRule() {
+        return rule;
+    }
 
-    public String getErrorSymbol() { return _errorSymbol; }
-    //public void setErrorSymbol(String errorSymbol) { _errorSymbol = errorSymbol; }
+    public String getErrorSymbol() {
+        return errorSymbol;
+    }
 
-    public int getLineNumber() { return _linenum; }
-    public void setLineNumber(int linenum) { _linenum = linenum; }
+    public int getLineNumber() {
+        return linenum;
+    }
+
+    public void setLineNumber(int linenum) {
+        this.linenum = linenum;
+    }
 
     public int compareTo(Object obj) {
-        int n = ((ValidationException)obj).getLineNumber();
-        return _linenum - n;
+        int n = ((ValidationException) obj).getLineNumber();
+        return linenum - n;
     }
+
 }
