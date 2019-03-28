@@ -48,12 +48,13 @@ import org.apache.commons.io.IOUtils;
  */
 public class CSARRepository extends Repository {
 
-
-	private String	metaEntryName = "TOSCA-Metadata/TOSCA.meta";
-		
-	private byte[] 						data;
-	private Properties 				meta = new Properties();
-	private Map<URI, Target> 	entries = null;
+    private static Logger logger =
+            Logger.getLogger("com.att.research.is.tosca.yaml.CSARRepository");
+    private static final String CHARSET = "UTF-8";
+    private String metaEntryName = "TOSCA-Metadata/TOSCA.meta";
+    private byte[] data;
+    private Properties meta = new Properties();
+    private Map<URI, Target> entries = null;
 	
 	public CSARRepository(String theName, URI theRoot) throws IOException {
 		super(theName, theRoot);
@@ -62,18 +63,18 @@ public class CSARRepository extends Repository {
 
 	private void load() throws IOException {
 		InputStream is = null;
-  	try {
-			is = this.getRoot().toURL().openStream();
-			this.data = IOUtils.toByteArray(is);
-		}
-		finally {
-			if (is != null) {
-				try {
-					is.close();
-				}
-				catch(IOException iox) {}
-			}
-		}
+        try {
+            is = this.getRoot().toURL().openStream();
+            this.data = IOUtils.toByteArray(is);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException iox) {
+                    logger.log(Level.WARNING, "Failed to close input stream", iox);
+                }
+            }
+        }
 	}
 
 	//one should read the meta-inf/MANIFEST.MF file before deciding that a file is text
@@ -91,13 +92,14 @@ public class CSARRepository extends Repository {
 			}	
 		}
 		catch (IOException iox) {
-			log.log(Level.WARNING, "Failed to read archive", iox);
+			logger.log(Level.WARNING, "Failed to read archive", iox);
 		}
 		finally {
 			try {
 				archiveInputStream.close();
 			}
 			catch (IOException iox) {
+			    logger.log(Level.WARNING, "Failed to close input stream", iox);
 			}
 		}
 		return result;
@@ -117,59 +119,20 @@ public class CSARRepository extends Repository {
 	private Boolean readMeta(InputStream theStream) {
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(theStream, "UTF-8"));
+			reader = new BufferedReader(new InputStreamReader(theStream, CHARSET));
 			this.meta.load(reader);
 			return Boolean.TRUE;
 		}
 		catch(IOException iox) {
-			log.log(Level.WARNING, "Failed to read archive meta entry", iox);
+			logger.log(Level.WARNING, "Failed to read archive meta entry", iox);
 			return Boolean.FALSE;
 		}	
-		finally {
-			/*
-			if (reader != null) {
-				try {
-					reader.close();
-				}
-				catch (IOException iox) {
-				}
-			}
-			*/
-			//!!Do not close as it is used with processData which does the entry close itself
-		}
+		//!!Do not close reader as it is used with processData which does the entry close itself
 	}			
-
-	/*
-	private Boolean readMeta() {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				//TODO:
-			}
-			return Boolean.TRUE;
-		}
-		catch (IOException iox) {
-			log.log(Level.WARNING, "Failed to read archive meta entry", iox);
-			return Boolean.FALSE;
-		}
-		finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				}
-				catch (IOException iox) {
-				}
-			}
-			//!!Do not close as it is used with processData which does the entry close itself
-		}
-	}	
-	*/
 
 	private Map<URI,Target> entries() {
 		if (this.entries == null) {
-			this.entries = new HashMap<URI, Target>();
+			this.entries = new HashMap<>();
 			processData( (entry,stream) -> { 
 				URI entryURI = this.rootURI.resolve(entry.getName());
 				this.entries.put(entryURI, new CsarTarget(entry.getName(), entryURI)); 
@@ -252,20 +215,21 @@ public class CSARRepository extends Repository {
 							while ((len = stream.read(buffer)) > 0) {
    							out.write(buffer, 0, len);
 							}
-							log.info(entry.getName() + ": " + out.toString("UTF-8"));
+							logger.info(entry.getName() + ": " + out.toString(CHARSET));
 						}
 						catch (IOException iox) {
-							log.warning("Failed to read entry data: " + iox);
-							return out = null;
+							logger.warning("Failed to read entry data: " + iox);
+							out = null;
+							return out;
 						}
 					}
 					//!!Do not close as it is used with processData which does the entry close itself
 
 					try {
-						return (out != null) ? out.toString("UTF-8") : null;
+						return (out != null) ? out.toString(CHARSET) : null;
 					}
 					catch (UnsupportedEncodingException uex) {
-						log.warning("Failed to process entry data as string: " + uex);
+						logger.warning("Failed to process entry data as string: " + uex);
 						return "";
 					}
 				});
@@ -273,6 +237,7 @@ public class CSARRepository extends Repository {
 			return this.content;
 		}
 
+		@Override
 		public Reader open() throws IOException {
 			return new StringReader(content());
 		}

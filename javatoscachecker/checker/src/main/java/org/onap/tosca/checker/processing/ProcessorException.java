@@ -20,24 +20,24 @@ import org.onap.tosca.checker.CheckerException;
  */
 public class ProcessorException extends CheckerException {
 
-	private Target	target;
+    private final transient Target target;
 
-  public ProcessorException(Target theTarget, String theMsg, Throwable theCause) {
-    super(theMsg, theCause);
-		this.target = theTarget;
-  }
+    public ProcessorException(Target theTarget, String theMsg, Throwable theCause) {
+        super(theMsg, theCause);
+        this.target = theTarget;
+    }
 
-  public ProcessorException(Target theTarget, String theMsg) {
-    super(theMsg);
-		this.target = theTarget;
-  }
+    public ProcessorException(Target theTarget, String theMsg) {
+        super(theMsg);
+        this.target = theTarget;
+    }
 
-	public Target getTarget() {
-		return this.target;
-	}
+    public Target getTarget() {
+        return this.target;
+    }
 
-	@Override
-	public String getMessage() {
-		return this.target + ":" + super.getMessage() + (getCause() == null ? "" : ("(" + getCause() + ")"));
-	}
+    @Override
+    public String getMessage() {
+        return this.target + ":" + super.getMessage() + (getCause() == null ? "" : ("(" + getCause() + ")"));
+    }
 }
