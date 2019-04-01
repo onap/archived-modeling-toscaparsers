@@ -90,22 +90,23 @@ import java.util.Collections;
  *  @release   $Release: 0.5.1 $
  */
 public class Validator {
-    private Rule _rule;
+    private Rule rule;
 
-    public Validator(Map schema) throws SchemaException {
-        _rule = new Rule(schema);
+    public Validator(Map schema) {
+        rule = new Rule(schema);
     }
 
-    public Validator(Object schema) throws SchemaException {
-        _rule = new Rule(schema);
+    public Validator(Object schema) {
+        rule = new Rule(schema);
     }
 
-    public Rule getRule() { return _rule; }
-    //public void setRule(Rule rule) { _rule = rule; }
+    public Rule getRule() {
+        return rule;
+    }
 
     public List validate(Object value) {
         ValidationContext vctx = new ValidationContext();
-        _validateRule(value, _rule, vctx);
+        validateRule(value, rule, vctx);
         return vctx.getErrors();
     }
 
@@ -117,7 +118,7 @@ public class Validator {
     protected void postValidationHook(Object value, Rule rule, ValidationContext context) {
     }
 
-    private void _validateRule(Object value, Rule rule, ValidationContext context) {
+    private void validateRule(Object value, Rule rule, ValidationContext context) {
         //why is done necessary? why would one end up having to validate twice the same collection??
         if (Types.isCollection(value)) {
             if (context.done(value))
@@ -139,7 +140,7 @@ public class Validator {
         //if (klass != null && value != null && !klass.isInstance(value)) {
 
         int n = context.errorCount();
-        validateRule(value, rule, context);
+        defaultValidateRule(value, rule, context);
         if (context.errorCount() != n) {
             return;
         }
@@ -148,7 +149,7 @@ public class Validator {
     }
 
     /* this is the default validation process */
-    protected void validateRule(Object value, Rule rule, ValidationContext context) {
+    protected void defaultValidateRule(Object value, Rule rule, ValidationContext context) {
 
       if (value != null && ! Types.isCorrectType(value, rule.getType())) {
           Object[] args = new Object[] { Types.typeName(rule.getType()) };
@@ -178,21 +179,17 @@ public class Validator {
             //    errors.add("asset.failed", rule, path, value, new Object[] { rule.getAssert() });
             //}
         }
-        if (rule.getEnum() != null) {
-            if (! rule.getEnum().contains(value)) {
+        if (rule.getEnum() != null && !rule.getEnum().contains(value)) {
                 //if (Util.matches(keyname, "\\A\\d+\\z") keyname = "enum";
                 context.addError("enum.notexist", rule, value, new Object[] { context.getPathElement() });
-            }
         }
         //
         if (value == null) {
             return;
         }
         //
-        if (rule.getPattern() != null) {
-            if (! Util.matches(value.toString(), rule.getPatternRegexp())) {
-                context.addError("pattern.unmatch", rule, value, new Object[] { rule.getPattern() });
-            }
+        if (rule.getPattern() != null && ! Util.matches(value.toString(), rule.getPatternRegexp())) {
+            context.addError("pattern.unmatch", rule, value, new Object[] { rule.getPattern() });
         }
         if (rule.getRange() != null) {
             assert Types.isScalar(value);
@@ -217,48 +214,47 @@ public class Validator {
             int len = value.toString().length();
             Integer v;
             if ((v = (Integer)length.get("max")) != null && v.intValue() < len) {
-                context.addError("length.toolong", rule, value, new Object[] { new Integer(len), v });
+                context.addError("length.toolong", rule, value, new Object[] { Integer.valueOf(len), v });
             }
             if ((v = (Integer)length.get("min")) != null && v.intValue() > len) {
-                context.addError("length.tooshort", rule, value, new Object[] { new Integer(len), v });
+                context.addError("length.tooshort", rule, value, new Object[] { Integer.valueOf(len), v });
             }
             if ((v = (Integer)length.get("max-ex")) != null && v.intValue() <= len) {
-                context.addError("length.toolongex", rule, value, new Object[] { new Integer(len), v });
+                context.addError("length.toolongex", rule, value, new Object[] { Integer.valueOf(len), v });
             }
             if ((v = (Integer)length.get("min-ex")) != null && v.intValue() >= len) {
-                context.addError("length.tooshortex", rule, value, new Object[] { new Integer(len), v });
+                context.addError("length.tooshortex", rule, value, new Object[] { Integer.valueOf(len), v });
             }
         }
     }
 
 
-    private void validateSequence(List sequence, Rule seq_rule, ValidationContext context) {
-        assert seq_rule.getSequence() instanceof List;
-        assert seq_rule.getSequence().size() == 1;
+    private void validateSequence(List sequence, Rule seqRule, ValidationContext context) {
+        assert seqRule.getSequence().size() == 1;
         if (sequence == null) {
             return;
         }
-        Rule rule = (Rule)seq_rule.getSequence().get(0);
+        Rule rule = (Rule)seqRule.getSequence().get(0);
         int i = 0;
         for (Iterator it = sequence.iterator(); it.hasNext(); i++) {
             Object val = it.next();
             context.addPathElement(String.valueOf(i));
-            _validateRule(val, rule, context);  // validate recursively
+            validateRule(val, rule, context);  // validate recursively
             context.removePathElement();
         }
         if (rule.getType().equals("map")) {
             Map mapping = rule.getMapping();
-            List unique_keys = new ArrayList();
+            List uniqueKeys = new ArrayList();
             for (Iterator it = mapping.keySet().iterator(); it.hasNext(); ) {
                 Object key = it.next();
-                Rule map_rule = (Rule)mapping.get(key);
-                if (map_rule.isUnique() || map_rule.isIdent()) {
-                    unique_keys.add(key);
+                Rule mapRule = (Rule)mapping.get(key);
+                if (mapRule.isUnique() || mapRule.isIdent()) {
+                    uniqueKeys.add(key);
                 }
             }
             //
-            if (unique_keys.size() > 0) {
-                for (Iterator it = unique_keys.iterator(); it.hasNext(); ) {
+            if (uniqueKeys.size() > 0) {
+                for (Iterator it = uniqueKeys.iterator(); it.hasNext(); ) {
                     Object key = it.next();
                     Map table = new HashMap();  // val => index
                     int j = 0;
@@ -270,10 +266,10 @@ public class Validator {
                         }
                         if (table.containsKey(val)) {
                             String path = context.getPath();
-                            String prev_path = path + "/" + table.get(val) + "/" + key;
+                            String prevPath = path + "/" + table.get(val) + "/" + key;
                             context.addPathElement(String.valueOf(j))
                                    .addPathElement(key.toString());
-                            context.addError("value.notunique", rule, val, new Object[] { prev_path });
+                            context.addError("value.notunique", rule, val, new Object[] { prevPath });
                             context.removePathElement()
                                    .removePathElement();
                         } else {
@@ -292,9 +288,9 @@ public class Validator {
                 }
                 if (table.containsKey(val)) {
                     String path = context.getPath();
-                    String prev_path = path + "/" + table.get(val);
+                    String prevPath = path + "/" + table.get(val);
                     context.addPathElement(String.valueOf(j))
-                           .addError("value.notunique", rule, val, new Object[] { prev_path })
+                           .addError("value.notunique", rule, val, new Object[] { prevPath })
                            .removePathElement();
                 } else {
                     table.put(val, new Integer(j));
@@ -304,12 +300,11 @@ public class Validator {
     }
 
 
-    private void validateMapping(Map mapping, Rule map_rule, ValidationContext context) {
-        assert map_rule.getMapping() instanceof Map;
+    private void validateMapping(Map mapping, Rule mapRule, ValidationContext context) {
         if (mapping == null) {
             return;
         }
-        Map m = map_rule.getMapping();
+        Map m = mapRule.getMapping();
         for (Iterator it = m.keySet().iterator(); it.hasNext(); ) {
             Object key = it.next();
             Rule rule = (Rule)m.get(key);
@@ -323,24 +318,24 @@ public class Validator {
             Rule rule = (Rule)m.get(key);
             context.addPathElement(key.toString());
             if (rule == null) {
-                context.addError("key.undefined", rule, mapping, new Object[] { key.toString() + ":", map_rule.getName() + m.keySet().toString() });
+                context.addError("key.undefined", rule, mapping, new Object[] { key.toString() + ":", mapRule.getName() + m.keySet().toString() });
             } else {
-                _validateRule(val, rule, context);  // validate recursively
+                validateRule(val, rule, context);  // validate recursively
             }
             context.removePathElement();
         }
     }
 
-    private void validateReference(Object value, Rule ref_rule, ValidationContext context) {
+    private void validateReference(Object value, Rule refRule, ValidationContext context) {
 			//look only up the rule chain. This is a limitation
-			Rule refed = ref_rule;
+			Rule refed = refRule;
 			while ((refed = refed.getParent()) != null) {
-				if (refed.getName() != null && refed.getName().equals(ref_rule.getReference())) {
-					validateRule(value, refed, context);
+				if (refed.getName() != null && refed.getName().equals(refRule.getReference())) {
+					defaultValidateRule(value, refed, context);
 					return;
 				}
 			}
-			context.addError("ref.nosuchrule", ref_rule, value, new Object[] { ref_rule.getReference() });
+			context.addError("ref.nosuchrule", refRule, value, new Object[] { refRule.getReference() });
 		}
 
     public class ValidationContext {
@@ -378,17 +373,17 @@ public class Validator {
          return this;
        }
 
-       protected ValidationContext addError(String error_symbol, Rule rule, Object value, Object[] args) {
+       protected ValidationContext addError(String errorSymbol, Rule rule, Object value, Object[] args) {
          addError(
 	   new ValidationException(
-             Messages.buildMessage(error_symbol, value, args), getPath(), value, rule, error_symbol));
+             Messages.buildMessage(errorSymbol, value, args), getPath(), value, rule, errorSymbol));
          return this;
        }
 
-       protected ValidationContext addError(String error_symbol, Rule rule, String relpath, Object value, Object[] args) {
+       protected ValidationContext addError(String errorSymbol, Rule rule, String relpath, Object value, Object[] args) {
          addError(
 	   new ValidationException(
-             Messages.buildMessage(error_symbol, value, args), getPath()+"/"+relpath, value, rule, error_symbol));
+             Messages.buildMessage(errorSymbol, value, args), getPath()+"/"+relpath, value, rule, errorSymbol));
          return this;
        }
 

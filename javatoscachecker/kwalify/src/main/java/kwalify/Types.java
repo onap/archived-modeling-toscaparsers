@@ -58,11 +58,11 @@ import java.util.Date;
 public class Types {
 
     public static Class typeClass(String type) {
-        return (Class)__type_classes.get(type);
+        return (Class)typeClasses.get(type);
     }
 
     public static String typeName(String type) {
-        String name = (String)__type_names.get(type);
+        String name = (String)typeNames.get(type);
         if (name == null) name = type;
         return name;
     }
@@ -71,40 +71,40 @@ public class Types {
 
     public static String getDefaultType() { return DEFAULT_TYPE; }
 
-    private static Map __type_classes;
-    private static Map __type_names;
+    private static Map typeClasses;
+    private static Map typeNames;
     static {
         //
-        __type_classes = new HashMap();
-        __type_classes.put("str",       String.class);
-        __type_classes.put("int",       Integer.class);
-        __type_classes.put("float",     Double.class);
-        __type_classes.put("number",    Number.class);
-        __type_classes.put("text",      null);
-        __type_classes.put("bool",      Boolean.class);
-        __type_classes.put("map",       Map.class);
-        __type_classes.put("seq",       List.class);
-        __type_classes.put("timestamp", Date.class);
-        __type_classes.put("date",      Date.class);
-        __type_classes.put("symbol",    String.class);
-        __type_classes.put("scalar",    null);
-        __type_classes.put("any",       Object.class);
-        __type_classes.put("ref",       Object.class);  // by jora
+        typeClasses = new HashMap();
+        typeClasses.put("str",       String.class);
+        typeClasses.put("int",       Integer.class);
+        typeClasses.put("float",     Double.class);
+        typeClasses.put("number",    Number.class);
+        typeClasses.put("text",      null);
+        typeClasses.put("bool",      Boolean.class);
+        typeClasses.put("map",       Map.class);
+        typeClasses.put("seq",       List.class);
+        typeClasses.put("timestamp", Date.class);
+        typeClasses.put("date",      Date.class);
+        typeClasses.put("symbol",    String.class);
+        typeClasses.put("scalar",    null);
+        typeClasses.put("any",       Object.class);
+        typeClasses.put("ref",       Object.class);  // by jora
         //__type_classes.put("null",      null);
 
         //
-        __type_names = new HashMap();
-        __type_names.put("map",  "mapping");
-        __type_names.put("seq",  "sequence");
-        __type_names.put("str",  "string");
-        __type_names.put("int",  "integer");
-        __type_names.put("bool", "boolean");
-        __type_names.put("ref",  "reference");					//by jora
+        typeNames = new HashMap();
+        typeNames.put("map",  "mapping");
+        typeNames.put("seq",  "sequence");
+        typeNames.put("str",  "string");
+        typeNames.put("int",  "integer");
+        typeNames.put("bool", "boolean");
+        typeNames.put("ref",  "reference");					//by jora
     }
 
 
     public static boolean isBuiltinType(String type) {
-        return __type_classes.containsKey(type);
+        return typeClasses.containsKey(type);
     }
 
     public static boolean isCollectionType(String type) {
@@ -128,9 +128,9 @@ public class Types {
     }
 
     public static boolean isCorrectType(Object obj, String type) {
-        Class type_class = typeClass(type);
-        if (type_class != null) {
-            return type_class.isInstance(obj);
+        Class typeClassObj = typeClass(type);
+        if (typeClassObj != null) {
+            return typeClassObj.isInstance(obj);
         }
         if (type.equals("null")) {
             return obj == null;
