@@ -5,6 +5,35 @@
 
 Modeling NFV Parser Release Notes
 =================================
+Version: 1.4.1
+--------------
+
+
+:Release Date: 2019-06-06
+
+
+
+**New Features**
+
+**Bug Fixes**
+
+**Security Notes**
+
+   MODELING-109 Add exception description for license.
+
+Quick Links:
+ 	- `MODELLING project page <https://wiki.onap.org/display/DW/Modeling+Project>`_
+ 	
+ 	- `Passing Badge information for MODELLING <https://bestpractices.coreinfrastructure.org/en/projects/1774>`_
+ 	
+**Known Issues**
+   None
+
+**Upgrade Notes**
+   None
+
+**Other**
+
 
 Version: 1.2.1
 --------------
